@@ -1,0 +1,13 @@
+# Go 
+backend/bin/ 
+backend/*.exe 
+backend/.env 
+ 
+# Node/Angular 
+frontend/node_modules/ 
+frontend/dist/ 
+frontend/.angular/ 
+ 
+# Editor 
+.vscode/ 
+.idea/
