@@ -46,6 +46,9 @@ func main() {
 	r.Group(func(protected chi.Router) {
 		protected.Use(auth.RequireAuth)
 		protected.Get("/me", handlers.MeHandler)
+		protected.Post("/progress", handlers.AddProgressHandler)
+		protected.Get("/progress", handlers.ListProgressHandler)
+		protected.Put("/progress/{mediaItemId}/episode", handlers.UpdateEpisodeHandler)
 	})
 
 	r.Get("/search", handlers.SearchHandler)
