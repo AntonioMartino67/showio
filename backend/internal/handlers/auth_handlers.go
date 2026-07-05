@@ -104,3 +104,22 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(LoginResponse{Token: token})
 }
+
+func MeHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	var username, email string
+	query := `SELECT username, email FROM users WHERE id = $1`
+	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email)
+	if err != nil {
+		http.Error(w, "Utente non trovato", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"id":       userID,
+		"username": username,
+		"email":    email,
+	})
+}

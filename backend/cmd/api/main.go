@@ -10,6 +10,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/AntonioMartino67/showio/backend/internal/database"
 	"github.com/AntonioMartino67/showio/backend/internal/handlers"
+	"github.com/AntonioMartino67/showio/backend/internal/auth"
 )
 
 func main() {
@@ -41,6 +42,11 @@ func main() {
 	
 	r.Post("/register", handlers.RegisterHandler)
 	r.Post("/login", handlers.LoginHandler)
+
+	r.Group(func(protected chi.Router) {
+		protected.Use(auth.RequireAuth)
+		protected.Get("/me", handlers.MeHandler)
+	})
 
 	log.Printf("Server in ascolto sulla porta %s", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
