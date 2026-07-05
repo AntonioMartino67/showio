@@ -48,9 +48,10 @@ func main() {
 		protected.Get("/me", handlers.MeHandler)
 	})
 
+	r.Get("/search", handlers.SearchHandler)
+
 	log.Printf("Server in ascolto sulla porta %s", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {
 		log.Fatal(err)
 	}
-
 }
