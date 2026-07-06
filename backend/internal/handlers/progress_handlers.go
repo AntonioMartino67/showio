@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	"encoding/json"
 	"net/http"
@@ -54,6 +55,20 @@ func AddProgressHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Errore durante il salvataggio", http.StatusInternalServerError)
 		return
 	}
+
+	// Se il media è una serie TV, sincronizziamo stagioni/episodi da TMDB in background
+	go func() {
+		var mediaType, externalID string
+		err := database.Pool.QueryRow(context.Background(),
+			`SELECT type, external_id FROM media_items WHERE id = $1`, req.MediaItemID,
+		).Scan(&mediaType, &externalID)
+		if err != nil {
+			return
+		}
+		if mediaType == "tv" {
+			SyncTVSeasons(req.MediaItemID, externalID)
+		}
+	}()
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{

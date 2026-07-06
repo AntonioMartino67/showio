@@ -42,6 +42,7 @@ func main() {
 	
 	r.Post("/register", handlers.RegisterHandler)
 	r.Post("/login", handlers.LoginHandler)
+	r.Post("/cron/sync-all", handlers.SyncAllHandler)
 
 	r.Group(func(protected chi.Router) {
 		protected.Use(auth.RequireAuth)
@@ -49,6 +50,7 @@ func main() {
 		protected.Post("/progress", handlers.AddProgressHandler)
 		protected.Get("/progress", handlers.ListProgressHandler)
 		protected.Put("/progress/{mediaItemId}/episode", handlers.UpdateEpisodeHandler)
+		protected.Get("/calendar", handlers.CalendarHandler)
 	})
 
 	r.Get("/search", handlers.SearchHandler)
