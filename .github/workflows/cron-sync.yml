@@ -1,0 +1,15 @@
+name: Sync notturno episodi
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # ogni notte alle 03:00 UTC
+  workflow_dispatch:      # permette di lanciarlo anche manualmente da GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chiama endpoint di sync
+        run: |
+          curl -X POST https://showio.onrender.com/cron/sync-all \
+            -H "X-Cron-Secret: ${{ secrets.CRON_SECRET }}"
