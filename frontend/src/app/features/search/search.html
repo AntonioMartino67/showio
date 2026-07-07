@@ -1,0 +1,40 @@
+<div class="page">
+  <nav class="navbar">
+    <span class="logo">Showio</span>
+    <div class="nav-links">
+      <a routerLink="/dashboard">La mia lista</a>
+      <a routerLink="/search" class="active">Cerca</a>
+      <a routerLink="/calendar">Calendario</a>
+    </div>
+  </nav>
+
+  <div class="content">
+    <form class="search-bar" (ngSubmit)="submit()">
+      <input type="text" [(ngModel)]="query" name="query" placeholder="Cerca film, serie, anime..." />
+      <button type="submit">Cerca</button>
+    </form>
+
+    @if (loading()) {
+      <p class="empty">Ricerca in corso...</p>
+    } @else if (results().length > 0) {
+      <div class="grid">
+        @for (item of results(); track item.media_item_id) {
+          <div class="card">
+            @if (item.poster_url) {
+              <img [src]="(item.source === 'tmdb' ? 'https://image.tmdb.org/t/p/w300' : '') + item.poster_url" [alt]="item.title" />
+            } @else {
+              <div class="no-poster">{{ item.title }}</div>
+            }
+            <div class="card-body">
+              <h3>{{ item.title }}</h3>
+              <span class="source">{{ item.source }} · {{ item.type }}</span>
+              <button [disabled]="isAdded(item)" (click)="add(item)">
+                {{ isAdded(item) ? 'Aggiunto ✓' : 'Aggiungi' }}
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,37 @@
+<div class="page">
+  <nav class="navbar">
+    <span class="logo">Showio</span>
+    <div class="nav-links">
+      <a routerLink="/dashboard">La mia lista</a>
+      <a routerLink="/search">Cerca</a>
+      <a routerLink="/calendar" class="active">Calendario</a>
+    </div>
+  </nav>
+
+  <div class="content">
+    @if (loading()) {
+      <p class="empty">Caricamento...</p>
+    } @else if (items().length === 0) {
+      <p class="empty">Nessun episodio in arrivo per le serie che segui.</p>
+    } @else {
+      <div class="list">
+        @for (item of items(); track item.media_item_id) {
+          <div class="row">
+            @if (item.poster_url) {
+              <img [src]="'https://image.tmdb.org/t/p/w200' + item.poster_url" [alt]="item.title" />
+            } @else {
+              <div class="no-poster"></div>
+            }
+            <div class="info">
+              <h3>{{ item.title }}</h3>
+              <p>Prossimo: S{{ item.season_number }}E{{ item.episode_number }}</p>
+              @if (item.air_date) {
+                <span class="date">{{ item.air_date }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

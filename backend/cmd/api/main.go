@@ -7,6 +7,7 @@ import (
 	"os"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 	"github.com/AntonioMartino67/showio/backend/internal/database"
 	"github.com/AntonioMartino67/showio/backend/internal/handlers"
@@ -31,6 +32,13 @@ func main() {
 	// Middleware di base: logging delle richieste e recovery da panic
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:4200", "https://*.vercel.app"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Cron-Secret"},
+		AllowCredentials: true,
+		MaxAge:           300,
+	}))
 
 	// Health check: serve per verificare che il server sia vivo
 	r.Get("/health", func(w http.ResponseWriter, req *http.Request) {

@@ -1,0 +1,25 @@
+<div class="auth-page">
+  <form class="auth-card" (ngSubmit)="submit()">
+    <h1>Showio</h1>
+    <p class="subtitle">Crea un nuovo account</p>
+
+    <label>Username</label>
+    <input type="text" [(ngModel)]="username" name="username" required />
+
+    <label>Email</label>
+    <input type="email" [(ngModel)]="email" name="email" required />
+
+    <label>Password</label>
+    <input type="password" [(ngModel)]="password" name="password" required />
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Registrazione...' : 'Registrati' }}
+    </button>
+
+    <p class="link">Hai già un account? <a routerLink="/login">Accedi</a></p>
+  </form>
+</div>

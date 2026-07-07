@@ -9,6 +9,7 @@ export interface AuthResponse {
 }
 
 export interface SearchResult {
+  media_item_id: string;
   external_id: string;
   source: 'tmdb' | 'anilist';
   title: string;

@@ -1,0 +1,37 @@
+<div class="page">
+  <nav class="navbar">
+    <span class="logo">Showio</span>
+    <div class="nav-links">
+      <a routerLink="/dashboard" class="active">La mia lista</a>
+      <a routerLink="/search">Cerca</a>
+      <a routerLink="/calendar">Calendario</a>
+    </div>
+    <button class="logout" (click)="auth.logout()">Esci</button>
+  </nav>
+
+  <div class="content">
+    @if (loading()) {
+      <p class="empty">Caricamento...</p>
+    } @else if (items().length === 0) {
+      <p class="empty">La tua lista è vuota. <a routerLink="/search">Cerca qualcosa</a> da aggiungere.</p>
+    } @else {
+      <div class="grid">
+        @for (item of items(); track item.progress_id) {
+          <div class="card">
+            @if (item.poster_url) {
+              <img [src]="'https://image.tmdb.org/t/p/w300' + item.poster_url" [alt]="item.title" />
+            } @else {
+              <div class="no-poster">{{ item.title }}</div>
+            }
+            <div class="card-body">
+              <h3>{{ item.title }}</h3>
+              <span class="status" [class]="item.status">{{ item.status }}</span>
+              <p class="episode">S{{ item.current_season }}E{{ item.current_episode }}</p>
+              <button (click)="nextEpisode(item)">+1 Episodio</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
