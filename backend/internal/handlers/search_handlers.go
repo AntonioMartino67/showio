@@ -11,12 +11,13 @@ import (
 )
 
 type UnifiedResult struct {
-	ExternalID string `json:"external_id"`
-	Source     string `json:"source"`
-	Title      string `json:"title"`
-	Type       string `json:"type"`
-	PosterURL  string `json:"poster_url"`
-	Overview   string `json:"overview"`
+	MediaItemID string `json:"media_item_id"`
+	ExternalID  string `json:"external_id"`
+	Source      string `json:"source"`
+	Title       string `json:"title"`
+	Type        string `json:"type"`
+	PosterURL   string `json:"poster_url"`
+	Overview    string `json:"overview"`
 }
 
 func SearchHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,15 +72,20 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	for _, item := range unified {
+	for i, item := range unified {
 		q := `
 			INSERT INTO media_items (external_id, source, title, type, poster_url, overview)
 			VALUES ($1, $2, $3, $4, $5, $6)
 			ON CONFLICT (external_id, source)
 			DO UPDATE SET title = $3, poster_url = $5, overview = $6, last_synced_at = CURRENT_TIMESTAMP
+			RETURNING id
 		`
-		database.Pool.Exec(r.Context(), q,
-			item.ExternalID, item.Source, item.Title, item.Type, item.PosterURL, item.Overview)
+		var id string
+		err := database.Pool.QueryRow(r.Context(), q,
+			item.ExternalID, item.Source, item.Title, item.Type, item.PosterURL, item.Overview).Scan(&id)
+		if err == nil {
+			unified[i].MediaItemID = id
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
