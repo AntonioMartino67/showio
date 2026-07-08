@@ -58,6 +58,9 @@ func main() {
 		protected.Post("/progress", handlers.AddProgressHandler)
 		protected.Get("/progress", handlers.ListProgressHandler)
 		protected.Put("/progress/{mediaItemId}/episode", handlers.UpdateEpisodeHandler)
+		protected.Delete("/progress/{mediaItemId}", handlers.RemoveProgressHandler)
+		protected.Put("/progress/{mediaItemId}/rating", handlers.UpdateRatingHandler)
+		protected.Get("/media/{mediaItemId}", handlers.MediaDetailHandler)
 		protected.Get("/calendar", handlers.CalendarHandler)
 	})
 

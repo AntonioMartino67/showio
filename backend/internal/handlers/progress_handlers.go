@@ -156,3 +156,51 @@ func ListProgressHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(results)
 }
+
+// RemoveProgressHandler rimuove un titolo dalla lista personale dell'utente
+func RemoveProgressHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+	mediaItemID := chi.URLParam(r, "mediaItemId")
+
+	query := `DELETE FROM user_progress WHERE user_id = $1 AND media_item_id = $2`
+	tag, err := database.Pool.Exec(r.Context(), query, userID, mediaItemID)
+	if err != nil {
+		http.Error(w, "Errore durante la rimozione", http.StatusInternalServerError)
+		return
+	}
+	if tag.RowsAffected() == 0 {
+		http.Error(w, "Elemento non trovato", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+type RatingRequest struct {
+	Rating int `json:"rating"` // 1-10
+}
+
+// UpdateRatingHandler assegna un voto a un titolo della lista
+func UpdateRatingHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+	mediaItemID := chi.URLParam(r, "mediaItemId")
+
+	var req RatingRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Corpo della richiesta non valido", http.StatusBadRequest)
+		return
+	}
+	if req.Rating < 1 || req.Rating > 10 {
+		http.Error(w, "Rating deve essere tra 1 e 10", http.StatusBadRequest)
+		return
+	}
+
+	query := `UPDATE user_progress SET rating = $1 WHERE user_id = $2 AND media_item_id = $3`
+	tag, err := database.Pool.Exec(r.Context(), query, req.Rating, userID, mediaItemID)
+	if err != nil || tag.RowsAffected() == 0 {
+		http.Error(w, "Elemento non trovato", http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
