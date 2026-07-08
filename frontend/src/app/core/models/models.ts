@@ -40,3 +40,23 @@ export interface UpcomingEpisode {
   episode_number: number;
   air_date?: string;
 }
+
+export interface EpisodeDetail {
+  season_number: number;
+  episode_number: number;
+  title?: string;
+  air_date?: string;
+}
+
+export interface MediaDetail {
+  media_item_id: string;
+  title: string;
+  type: string;
+  poster_url?: string;
+  overview?: string;
+  status?: ProgressStatus;
+  current_season: number;
+  current_episode: number;
+  rating?: number;
+  episodes: EpisodeDetail[];
+}

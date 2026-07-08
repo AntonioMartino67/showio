@@ -1,0 +1,62 @@
+<div class="page">
+  <nav class="navbar">
+    <span class="logo">Showio</span>
+    <div class="nav-links">
+      <a routerLink="/dashboard">La mia lista</a>
+      <a routerLink="/search">Cerca</a>
+      <a routerLink="/calendar">Calendario</a>
+    </div>
+  </nav>
+
+  <div class="content">
+    @if (loading()) {
+      <p class="empty">Caricamento...</p>
+    } @else if (detail(); as d) {
+      <div class="detail">
+        @if (d.poster_url) {
+          <img class="poster" [src]="'https://image.tmdb.org/t/p/w300' + d.poster_url" [alt]="d.title" />
+        }
+        <div class="info">
+          <h1>{{ d.title }}</h1>
+          <p class="overview">{{ d.overview }}</p>
+
+          @if (!d.status) {
+            <button class="primary" (click)="addToList()">Aggiungi alla lista</button>
+          } @else {
+            <div class="controls">
+              <label>Stato</label>
+              <select [ngModel]="d.status" (ngModelChange)="changeStatus($event)">
+                <option value="plan_to_watch">Da vedere</option>
+                <option value="watching">In corso</option>
+                <option value="completed">Completato</option>
+                <option value="dropped">Abbandonato</option>
+              </select>
+
+              <label>Voto</label>
+              <div class="stars">
+                @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {
+                  <span class="star" [class.filled]="(d.rating || 0) >= n" (click)="setRating(n)">★</span>
+                }
+              </div>
+
+              <button class="danger" (click)="remove()">Rimuovi dalla lista</button>
+            </div>
+
+            @if (d.episodes.length > 0) {
+              <h2>Episodi</h2>
+              <div class="episodes">
+                @for (ep of d.episodes; track ep.season_number + '-' + ep.episode_number) {
+                  <div class="episode" [class.watched]="isPast(d, ep.season_number, ep.episode_number)" (click)="markWatched(ep.season_number, ep.episode_number)">
+                    <span>S{{ ep.season_number }}E{{ ep.episode_number }}</span>
+                    <span class="title">{{ ep.title }}</span>
+                    @if (ep.air_date) { <span class="date">{{ ep.air_date }}</span> }
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

@@ -19,8 +19,7 @@
     } @else if (results().length > 0) {
       <div class="grid">
         @for (item of results(); track item.media_item_id) {
-          <div class="card">
-            @if (item.poster_url) {
+          <div class="card" [routerLink]="['/media', item.media_item_id]">            @if (item.poster_url) {
               <img [src]="(item.source === 'tmdb' ? 'https://image.tmdb.org/t/p/w300' : '') + item.poster_url" [alt]="item.title" />
             } @else {
               <div class="no-poster">{{ item.title }}</div>
@@ -28,7 +27,7 @@
             <div class="card-body">
               <h3>{{ item.title }}</h3>
               <span class="source">{{ item.source }} · {{ item.type }}</span>
-              <button [disabled]="isAdded(item)" (click)="add(item)">
+              <button [disabled]="isAdded(item)" (click)="$event.stopPropagation(); add(item)">
                 {{ isAdded(item) ? 'Aggiunto ✓' : 'Aggiungi' }}
               </button>
             </div>

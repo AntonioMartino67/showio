@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { SearchResult, ProgressItem, UpcomingEpisode, ProgressStatus } from '../models/models';
+import { SearchResult, ProgressItem, UpcomingEpisode, ProgressStatus, MediaDetail } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
@@ -33,5 +33,17 @@ export class MediaService {
 
   getCalendar() {
     return this.http.get<UpcomingEpisode[]>(`${environment.apiUrl}/calendar`);
+  }
+
+  getMediaDetail(mediaItemId: string) {
+    return this.http.get<MediaDetail>(`${environment.apiUrl}/media/${mediaItemId}`);
+  }
+
+  removeProgress(mediaItemId: string) {
+    return this.http.delete(`${environment.apiUrl}/progress/${mediaItemId}`);
+  }
+
+  updateRating(mediaItemId: string, rating: number) {
+    return this.http.put(`${environment.apiUrl}/progress/${mediaItemId}/rating`, { rating });
   }
 }

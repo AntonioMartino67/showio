@@ -1,0 +1,32 @@
+.page { display: block; min-height: 100vh; background: #0f0f14; }
+.navbar { display: flex; align-items: center; gap: 2rem; padding: 1rem 2rem; background: #1a1a22; border-bottom: 1px solid #2b2a35;
+  .logo { color: #806dff; font-weight: 700; font-size: 1.25rem; }
+  .nav-links { display: flex; gap: 1.5rem;
+    a { color: #888; text-decoration: none; font-size: 0.9rem; &:hover { color: #fff; } }
+  }
+}
+.content { padding: 2rem; max-width: 900px; margin: 0 auto; }
+.empty { color: #888; text-align: center; margin-top: 3rem; }
+.detail { display: flex; gap: 2rem;
+  .poster { width: 220px; border-radius: 10px; flex-shrink: 0; }
+  .info { flex: 1; color: #fff;
+    h1 { margin: 0 0 0.75rem; }
+    .overview { color: #aaa; font-size: 0.9rem; line-height: 1.5; }
+  }
+}
+.controls { display: flex; flex-direction: column; gap: 0.5rem; margin: 1.5rem 0;
+  label { color: #888; font-size: 0.8rem; }
+  select { padding: 0.5rem; border-radius: 6px; border: 1px solid #333; background: #24242a; color: #fff; width: 200px; }
+  .stars { display: flex; gap: 2px;
+    .star { color: #444; cursor: pointer; font-size: 1.3rem; &.filled { color: #ffc107; } }
+  }
+  .danger { align-self: flex-start; background: none; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+  .primary { background: linear-gradient(135deg, #806dff, #9b6dff); border: none; color: #fff; padding: 0.65rem 1.25rem; border-radius: 6px; cursor: pointer; align-self: flex-start; }
+}
+.episodes { display: flex; flex-direction: column; gap: 0.4rem; max-height: 400px; overflow-y: auto;
+  .episode { display: flex; gap: 1rem; padding: 0.6rem; background: #1a1a22; border-radius: 6px; cursor: pointer; color: #aaa; font-size: 0.85rem;
+    &.watched { color: #4caf50; }
+    .title { flex: 1; }
+    .date { color: #666; }
+  }
+}
