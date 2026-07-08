@@ -1,17 +1,30 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { Login } from './features/auth/login/login';
-import { Register } from './features/auth/register/register';
-import { Dashboard } from './features/dashboard/dashboard';
-import { Search } from './features/search/search';
-import { Calendar } from './features/calendar/calendar';
 
 export const routes: Routes = [
-  { path: 'login', component: Login },
-  { path: 'register', component: Register },
-  { path: 'dashboard', component: Dashboard, canActivate: [authGuard] },
-  { path: 'search', component: Search, canActivate: [authGuard] },
-  { path: 'calendar', component: Calendar, canActivate: [authGuard] },
+  {
+    path: 'login',
+    loadComponent: () => import('./features/auth/login/login').then(m => m.Login)
+  },
+  {
+    path: 'register',
+    loadComponent: () => import('./features/auth/register/register').then(m => m.Register)
+  },
+  {
+    path: 'dashboard',
+    loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'search',
+    loadComponent: () => import('./features/search/search').then(m => m.Search),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'calendar',
+    loadComponent: () => import('./features/calendar/calendar').then(m => m.Calendar),
+    canActivate: [authGuard]
+  },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];
