@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { inject } from "@vercel/analytics"
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 @Component({
   selector: 'app-root',
@@ -13,5 +14,6 @@ export class App {
 
   constructor() {
     inject();
+    injectSpeedInsights();
   }
 }
