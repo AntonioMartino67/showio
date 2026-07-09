@@ -1,0 +1,45 @@
+.backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000; padding: 2rem; overflow-y: auto;
+}
+.modal {
+  background: #1a1a22; border-radius: 14px; max-width: 800px; width: 100%;
+  max-height: 85vh; overflow-y: auto; position: relative; padding: 1.5rem;
+}
+.close {
+  position: absolute; top: 1rem; right: 1rem; background: #24242a; border: none;
+  color: #fff; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem;
+  &:hover { background: #333; }
+}
+.empty { color: #888; text-align: center; padding: 2rem; }
+.body { display: flex; gap: 1.5rem; }
+.poster-wrap {
+  width: 200px; flex-shrink: 0; aspect-ratio: 2/3; border-radius: 10px; overflow: hidden;
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .no-poster { width: 100%; height: 100%; background: #24242a; display: flex; align-items: center; justify-content: center; color: #666; text-align: center; padding: 0.5rem; box-sizing: border-box; }
+}
+.info { flex: 1; color: #fff; min-width: 0;
+  h1 { margin: 0 0 0.75rem; font-size: 1.4rem; }
+  .overview { color: #aaa; font-size: 0.9rem; line-height: 1.5; max-height: 150px; overflow-y: auto; }
+}
+.controls { display: flex; flex-direction: column; gap: 0.5rem; margin: 1.25rem 0;
+  label { color: #888; font-size: 0.8rem; }
+  select { padding: 0.5rem; border-radius: 6px; border: 1px solid #333; background: #24242a; color: #fff; width: 200px; }
+  .stars { display: flex; gap: 2px;
+    .star { color: #444; cursor: pointer; font-size: 1.3rem; &.filled { color: #ffc107; } }
+  }
+  .danger { align-self: flex-start; background: none; border: 1px solid #ff6b6b; color: #ff6b6b; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
+  .primary { background: linear-gradient(135deg, #806dff, #9b6dff); border: none; color: #fff; padding: 0.65rem 1.25rem; border-radius: 6px; cursor: pointer; align-self: flex-start; }
+}
+.episodes { display: flex; flex-direction: column; gap: 0.4rem; max-height: 250px; overflow-y: auto;
+  .episode { display: flex; gap: 1rem; padding: 0.6rem; background: #0f0f14; border-radius: 6px; cursor: pointer; color: #aaa; font-size: 0.85rem;
+    &.watched { color: #4caf50; }
+    .title { flex: 1; }
+    .date { color: #666; }
+  }
+}
+@media (max-width: 600px) {
+  .body { flex-direction: column; }
+  .poster-wrap { width: 140px; }
+}

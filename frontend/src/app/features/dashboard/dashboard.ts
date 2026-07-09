@@ -4,11 +4,12 @@ import { RouterLink } from '@angular/router';
 import { MediaService } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProgressItem } from '../../core/models/models';
+import { MediaModal } from '../../shared/media-modal/media-modal';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MediaModal],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
@@ -40,4 +41,8 @@ export class Dashboard implements OnInit {
       this.load();
     });
   }
+
+  selectedMediaId = signal<string | null>(null);
+  openMedia(id: string) { this.selectedMediaId.set(id); }
+  closeMedia() { this.selectedMediaId.set(null); }
 }

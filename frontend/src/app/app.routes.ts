@@ -25,11 +25,6 @@ export const routes: Routes = [
     loadComponent: () => import('./features/calendar/calendar').then(m => m.Calendar),
     canActivate: [authGuard]
   },
-  {
-    path: 'media/:id',
-    loadComponent: () => import('./features/media-detail/media-detail').then(m => m.MediaDetail),
-    canActivate: [authGuard]
-  },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];

@@ -1,21 +1,18 @@
-<div class="page">
-  <nav class="navbar">
-    <span class="logo">Showio</span>
-    <div class="nav-links">
-      <a routerLink="/dashboard">La mia lista</a>
-      <a routerLink="/search">Cerca</a>
-      <a routerLink="/calendar">Calendario</a>
-    </div>
-  </nav>
+<div class="backdrop" (click)="close()">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <button class="close" (click)="close()">✕</button>
 
-  <div class="content">
     @if (loading()) {
       <p class="empty">Caricamento...</p>
     } @else if (detail(); as d) {
-      <div class="detail">
-        @if (d.poster_url) {
-          <img class="poster" [src]="'https://image.tmdb.org/t/p/w300' + d.poster_url" [alt]="d.title" />
-        }
+      <div class="body">
+        <div class="poster-wrap">
+          @if (d.poster_url) {
+            <img [src]="'https://image.tmdb.org/t/p/w400' + d.poster_url" [alt]="d.title" />
+          } @else {
+            <div class="no-poster">{{ d.title }}</div>
+          }
+        </div>
         <div class="info">
           <h1>{{ d.title }}</h1>
           <p class="overview">{{ d.overview }}</p>
