@@ -135,3 +135,35 @@ func GetSeasonEpisodes(tmdbID int, seasonNumber int) ([]TMDBEpisode, error) {
 
 	return result.Episodes, nil
 }
+
+// GetTrending recupera i titoli di tendenza della settimana (film + serie TV)
+func GetTrending() ([]TMDBSearchResult, error) {
+	token := os.Getenv("TMDB_TOKEN")
+
+	fullURL := fmt.Sprintf("%s/trending/all/week?language=it-IT", tmdbBaseURL)
+
+	req, err := http.NewRequest("GET", fullURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+token)
+	req.Header.Set("Accept", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("TMDB ha risposto con status %d", resp.StatusCode)
+	}
+
+	var result tmdbSearchResponse
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, err
+	}
+
+	return result.Results, nil
+}

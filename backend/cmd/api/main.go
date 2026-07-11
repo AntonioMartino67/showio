@@ -65,6 +65,7 @@ func main() {
 	})
 
 	r.Get("/search", handlers.SearchHandler)
+	r.Get("/trending", handlers.TrendingHandler)
 
 	log.Printf("Server in ascolto sulla porta %s", port)
 	if err := http.ListenAndServe(":"+port, r); err != nil {

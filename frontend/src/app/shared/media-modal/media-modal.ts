@@ -43,8 +43,20 @@ export class MediaModal implements OnChanges {
   }
 
   markWatched(season: number, episode: number) {
+  const d = this.detail();
+  if (!d) return;
+
+  if (this.isPast(d, season, episode)) {
+    // già segnato: lo smarchiamo tornando all'episodio precedente nella lista
+    const idx = d.episodes.findIndex(e => e.season_number === season && e.episode_number === episode);
+    const prev = idx > 0 ? d.episodes[idx - 1] : null;
+    const prevSeason = prev ? prev.season_number : 0;
+    const prevEpisode = prev ? prev.episode_number : 0;
+    this.media.updateEpisode(this.mediaItemId, prevSeason, prevEpisode).subscribe(() => { this.load(); this.changed.emit(); });
+  } else {
     this.media.updateEpisode(this.mediaItemId, season, episode).subscribe(() => { this.load(); this.changed.emit(); });
   }
+}
 
   setRating(rating: number) {
     this.media.updateRating(this.mediaItemId, rating).subscribe(() => this.load());

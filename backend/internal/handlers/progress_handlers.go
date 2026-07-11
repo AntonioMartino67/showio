@@ -42,6 +42,21 @@ func AddProgressHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Verifica che il titolo esista prima di provare l'insert, così restituiamo
+	// un errore chiaro (404) invece di un generico 500 in caso di FK violation
+	var exists bool
+	err := database.Pool.QueryRow(r.Context(),
+		`SELECT EXISTS(SELECT 1 FROM media_items WHERE id = $1)`, req.MediaItemID,
+	).Scan(&exists)
+	if err != nil {
+		http.Error(w, "Errore durante la verifica del titolo", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		http.Error(w, "Titolo non trovato", http.StatusNotFound)
+		return
+	}
+
 	query := `
 		INSERT INTO user_progress (user_id, media_item_id, status)
 		VALUES ($1, $2, $3)
@@ -50,7 +65,7 @@ func AddProgressHandler(w http.ResponseWriter, r *http.Request) {
 		RETURNING id
 	`
 	var progressID string
-	err := database.Pool.QueryRow(r.Context(), query, userID, req.MediaItemID, req.Status).Scan(&progressID)
+	err = database.Pool.QueryRow(r.Context(), query, userID, req.MediaItemID, req.Status).Scan(&progressID)
 	if err != nil {
 		http.Error(w, "Errore durante il salvataggio", http.StatusInternalServerError)
 		return
@@ -82,9 +97,12 @@ type UpdateEpisodeRequest struct {
 	CurrentEpisode int `json:"current_episode"`
 }
 
-// UpdateEpisodeHandler aggiorna a che episodio/stagione è arrivato l'utente
 // UpdateEpisodeHandler aggiorna a che episodio/stagione è arrivato l'utente.
-// Applica anche una logica di auto-status.
+// Applica anche una logica di auto-status:
+//   - se lo status attuale è "plan_to_watch", passa a "watching" appena si segna un episodio
+//   - se l'episodio segnato è l'ultimo dell'ultima stagione nota, passa a "completed"
+//   - se si torna indietro rispetto all'ultimo episodio da uno stato "completed", ritorna a "watching"
+//   - se si torna a "nessun episodio visto" (0,0), lo status torna a "plan_to_watch"
 func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(auth.UserIDKey).(string)
 	mediaItemID := chi.URLParam(r, "mediaItemId")
@@ -95,6 +113,7 @@ func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Recupera lo status corrente per decidere se serve una transizione automatica
 	var currentStatus string
 	err := database.Pool.QueryRow(r.Context(),
 		`SELECT status FROM user_progress WHERE user_id = $1 AND media_item_id = $2`,
@@ -110,6 +129,7 @@ func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 		newStatus = "watching"
 	}
 
+	// Determina se l'episodio segnato è l'ultimo episodio conosciuto (ultima stagione, ultimo episodio)
 	var lastSeason, lastEpisode int
 	err = database.Pool.QueryRow(r.Context(), `
 		SELECT s.season_number, e.episode_number
@@ -126,6 +146,11 @@ func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 		} else if newStatus == "completed" {
 			newStatus = "watching"
 		}
+	}
+
+	// Se si è tornati indietro fino a "nessun episodio visto", si torna a "da vedere"
+	if req.CurrentSeason == 0 && req.CurrentEpisode == 0 {
+		newStatus = "plan_to_watch"
 	}
 
 	query := `
@@ -175,7 +200,7 @@ func ListProgressHandler(w http.ResponseWriter, r *http.Request) {
 		PosterURL      *string `json:"poster_url,omitempty"`
 	}
 
-	var results []ProgressItem
+	results := []ProgressItem{}
 	for rows.Next() {
 		var item ProgressItem
 		if err := rows.Scan(

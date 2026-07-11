@@ -43,7 +43,7 @@ func CalendarHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer rows.Close()
 
-	var results []UpcomingEpisode
+	results := []UpcomingEpisode{}
 	for rows.Next() {
 		var item UpcomingEpisode
 		if err := rows.Scan(

@@ -27,7 +27,7 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var unified []UnifiedResult
+	unified := []UnifiedResult{}
 
 	tmdbResults, err := external.SearchMulti(query)
 	if err != nil {
@@ -90,4 +90,55 @@ func SearchHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(unified)
+}
+
+// TrendingHandler restituisce i titoli di tendenza, usati come suggerimenti
+// quando l'utente non ha ancora effettuato una ricerca
+func TrendingHandler(w http.ResponseWriter, r *http.Request) {
+	trending := []UnifiedResult{}
+
+	tmdbResults, err := external.GetTrending()
+	if err != nil {
+		log.Printf("[trending] errore TMDB: %v", err)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(trending)
+		return
+	}
+
+	for _, item := range tmdbResults {
+		if item.MediaType != "movie" && item.MediaType != "tv" {
+			continue
+		}
+		title := item.Title
+		if title == "" {
+			title = item.Name
+		}
+		trending = append(trending, UnifiedResult{
+			ExternalID: fmt.Sprintf("%d", item.ID),
+			Source:     "tmdb",
+			Title:      title,
+			Type:       item.MediaType,
+			PosterURL:  item.PosterPath,
+			Overview:   item.Overview,
+		})
+	}
+
+	for i, item := range trending {
+		q := `
+			INSERT INTO media_items (external_id, source, title, type, poster_url, overview)
+			VALUES ($1, $2, $3, $4, $5, $6)
+			ON CONFLICT (external_id, source)
+			DO UPDATE SET title = $3, poster_url = $5, overview = $6, last_synced_at = CURRENT_TIMESTAMP
+			RETURNING id
+		`
+		var id string
+		err := database.Pool.QueryRow(r.Context(), q,
+			item.ExternalID, item.Source, item.Title, item.Type, item.PosterURL, item.Overview).Scan(&id)
+		if err == nil {
+			trending[i].MediaItemID = id
+		}
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(trending)
 }

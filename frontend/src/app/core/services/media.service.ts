@@ -46,4 +46,8 @@ export class MediaService {
   updateRating(mediaItemId: string, rating: number) {
     return this.http.put(`${environment.apiUrl}/progress/${mediaItemId}/rating`, { rating });
   }
+
+  getTrending() {
+    return this.http.get<SearchResult[]>(`${environment.apiUrl}/trending`);
+  }
 }
