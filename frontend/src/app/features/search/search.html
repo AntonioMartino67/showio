@@ -6,6 +6,7 @@
       <a routerLink="/search" class="active">Cerca</a>
       <a routerLink="/calendar">Calendario</a>
     </div>
+    <button class="logout" (click)="auth.logout()">Esci</button>
   </nav>
 
   <div class="content">
@@ -15,24 +16,25 @@
     </form>
 
     @if (loading()) {
-        <div class="grid">
-          @for (i of skeletonItems; track i) {
-            <div class="card skeleton-card">
-              <div class="skeleton-poster"></div>
-              <div class="card-body">
-                <div class="skeleton-line skeleton-title"></div>
-                <div class="skeleton-line skeleton-sub"></div>
-              </div>
+      <div class="grid">
+        @for (i of skeletonItems; track i) {
+          <div class="card skeleton-card">
+            <div class="skeleton-poster"></div>
+            <div class="card-body">
+              <div class="skeleton-line skeleton-title"></div>
+              <div class="skeleton-line skeleton-sub"></div>
             </div>
-          }
-        </div>
-      } @else if (results().length > 0) {
-          @if (showingTrending()) {
-            <p class="empty" style="margin-bottom:1rem;">Titoli di tendenza:</p>
-          }
+          </div>
+        }
+      </div>
+    } @else if (results().length > 0) {
+      @if (showingTrending()) {
+        <p class="empty" style="margin-bottom:1rem;">Titoli di tendenza:</p>
+      }
       <div class="grid">
         @for (item of results(); track item.media_item_id) {
-          <div class="card" [routerLink]="['/media', item.media_item_id]">            @if (item.poster_url) {
+          <div class="card" (click)="openMedia(item.media_item_id)">
+            @if (item.poster_url) {
               <img [src]="(item.source === 'tmdb' ? 'https://image.tmdb.org/t/p/w300' : '') + item.poster_url" [alt]="item.title" />
             } @else {
               <div class="no-poster">{{ item.title }}</div>
@@ -49,4 +51,8 @@
       </div>
     }
   </div>
+
+  @if (selectedMediaId(); as id) {
+    <app-media-modal [mediaItemId]="id" (closed)="closeMedia()" (changed)="onMediaChanged()"></app-media-modal>
+  }
 </div>

@@ -29,6 +29,10 @@
                 <option value="dropped">Abbandonato</option>
               </select>
 
+              @if (d.type === 'movie' && d.status !== 'completed') {
+                <button class="primary" (click)="changeStatus('completed')">Segna come visto</button>
+              }
+
               <label>Voto</label>
               <div class="stars">
                 @for (n of [1,2,3,4,5,6,7,8,9,10]; track n) {

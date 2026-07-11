@@ -17,6 +17,7 @@ import { Loader } from '../../shared/loader/loader';
 export class Dashboard implements OnInit {
   items = signal<ProgressItem[]>([]);
   loading = signal(true);
+  filter = signal<'all' | 'watching' | 'completed' | 'dropped' | 'plan_to_watch'>('all');
 
   constructor(private media: MediaService, public auth: AuthService) {}
 
@@ -34,6 +35,11 @@ export class Dashboard implements OnInit {
       },
       error: () => this.loading.set(false)
     });
+  }
+
+  filteredItems() {
+    const f = this.filter();
+    return f === 'all' ? this.items() : this.items().filter(i => i.status === f);
   }
 
   nextEpisode(item: ProgressItem) {

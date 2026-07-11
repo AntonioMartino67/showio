@@ -10,14 +10,24 @@
   </nav>
 
   <div class="content">
+    <div class="filters">
+      <button [class.active]="filter()==='all'" (click)="filter.set('all')">Tutti</button>
+      <button [class.active]="filter()==='watching'" (click)="filter.set('watching')">In corso</button>
+      <button [class.active]="filter()==='completed'" (click)="filter.set('completed')">Completati</button>
+      <button [class.active]="filter()==='plan_to_watch'" (click)="filter.set('plan_to_watch')">Da vedere</button>
+      <button [class.active]="filter()==='dropped'" (click)="filter.set('dropped')">Abbandonati</button>
+    </div>
+
     @if (loading()) {
       <app-loader label="Carico la tua lista..." />
     } @else if (items().length === 0) {
       <p class="empty">La tua lista è vuota. <a routerLink="/search">Cerca qualcosa</a> da aggiungere.</p>
+    } @else if (filteredItems().length === 0) {
+      <p class="empty">Nessun titolo in questa categoria.</p>
     } @else {
       <div class="grid">
-        @for (item of items(); track item.progress_id) {
-          <div class="card" (click)="openMedia(item.media_item_id)">            
+        @for (item of filteredItems(); track item.progress_id) {
+          <div class="card" (click)="openMedia(item.media_item_id)">
             @if (item.poster_url) {
               <img [src]="'https://image.tmdb.org/t/p/w300' + item.poster_url" [alt]="item.title" />
             } @else {
@@ -27,8 +37,8 @@
               <h3>{{ item.title }}</h3>
               <span class="status" [class]="item.status">{{ item.status }}</span>
               <p class="episode">S{{ item.current_season }}E{{ item.current_episode }}</p>
-            <button (click)="$event.stopPropagation(); nextEpisode(item)">+1 Episodio</button>            
-          </div>
+              <button (click)="$event.stopPropagation(); nextEpisode(item)">+1 Episodio</button>
+            </div>
           </div>
         }
       </div>

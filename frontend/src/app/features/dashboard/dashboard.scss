@@ -150,3 +150,32 @@
     }
   }
 }
+
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+
+  button {
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    border: 1px solid #333;
+    background: #1a1a22;
+    color: #888;
+    font-size: 0.8rem;
+    cursor: pointer;
+
+    &.active {
+      background: linear-gradient(135deg, #00d4ff, #0088ff);
+      color: #000;
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    &:hover:not(.active) {
+      color: #fff;
+      border-color: #555;
+    }
+  }
+}

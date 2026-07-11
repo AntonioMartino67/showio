@@ -6,11 +6,13 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MediaService } from '../../core/services/media.service';
 import { SearchResult } from '../../core/models/models';
+import { MediaModal } from '../../shared/media-modal/media-modal';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, MediaModal],
   templateUrl: './search.html',
   styleUrl: './search.scss'
 })
@@ -21,21 +23,14 @@ export class Search implements OnInit, OnDestroy {
   addedIds = signal<Set<string>>(new Set());
   skeletonItems = Array.from({ length: 8 });
   showingTrending = signal(false);
+  selectedMediaId = signal<string | null>(null);
 
   private queryChanged = new Subject<string>();
 
-  constructor(private media: MediaService) {}
+  constructor(private media: MediaService, public auth: AuthService) {}
 
   ngOnInit() {
-    // Carica la libreria dell'utente per sapere cosa è già in lista
-    // (persiste tra ricariche, non solo nella sessione corrente)
-    this.media.getProgress().subscribe({
-      next: (items) => {
-        const set = new Set(items.map(i => i.media_item_id));
-        this.addedIds.set(set);
-      }
-    });
-
+    this.refreshLibrary();
     this.loadTrending();
 
     this.queryChanged.pipe(
@@ -52,6 +47,15 @@ export class Search implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.queryChanged.complete();
+  }
+
+  refreshLibrary() {
+    this.media.getProgress().subscribe({
+      next: (items) => {
+        const set = new Set(items.map(i => i.media_item_id));
+        this.addedIds.set(set);
+      }
+    });
   }
 
   loadTrending() {
@@ -83,7 +87,6 @@ export class Search implements OnInit, OnDestroy {
   }
 
   submit() {
-    // invio manuale (Invio o click sul bottone): salta il debounce
     if (!this.query.trim()) {
       this.loadTrending();
       return;
@@ -101,5 +104,13 @@ export class Search implements OnInit, OnDestroy {
 
   isAdded(item: SearchResult): boolean {
     return this.addedIds().has(item.media_item_id);
+  }
+
+  openMedia(id: string) { this.selectedMediaId.set(id); }
+
+  closeMedia() { this.selectedMediaId.set(null); }
+
+  onMediaChanged() {
+    this.refreshLibrary();
   }
 }
