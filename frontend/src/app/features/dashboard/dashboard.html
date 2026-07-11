@@ -11,7 +11,7 @@
 
   <div class="content">
     @if (loading()) {
-      <p class="empty">Caricamento...</p>
+      <app-loader label="Carico la tua lista..." />
     } @else if (items().length === 0) {
       <p class="empty">La tua lista è vuota. <a routerLink="/search">Cerca qualcosa</a> da aggiungere.</p>
     } @else {

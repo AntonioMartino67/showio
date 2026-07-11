@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MediaService } from '../../core/services/media.service';
 import { MediaDetail, ProgressStatus } from '../../core/models/models';
+import { Loader } from '../loader/loader';
 
 @Component({
   selector: 'app-media-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, Loader],
   templateUrl: './media-modal.html',
   styleUrl: './media-modal.scss'
 })

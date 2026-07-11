@@ -15,8 +15,18 @@
     </form>
 
     @if (loading()) {
-      <p class="empty">Ricerca in corso...</p>
-    } @else if (results().length > 0) {
+        <div class="grid">
+          @for (i of skeletonItems; track i) {
+            <div class="card skeleton-card">
+              <div class="skeleton-poster"></div>
+              <div class="card-body">
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-sub"></div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (results().length > 0) {
       <div class="grid">
         @for (item of results(); track item.media_item_id) {
           <div class="card" [routerLink]="['/media', item.media_item_id]">            @if (item.poster_url) {

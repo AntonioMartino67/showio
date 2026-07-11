@@ -146,3 +146,29 @@
     }
   }
 }
+
+.skeleton-card { pointer-events: none; }
+
+.skeleton-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  background: linear-gradient(90deg, #1a1a22 25%, #24242e 37%, #1a1a22 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-line {
+  height: 0.75rem;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #1a1a22 25%, #24242e 37%, #1a1a22 63%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-title { width: 80%; margin-bottom: 0.5rem; }
+.skeleton-sub { width: 50%; height: 0.6rem; margin-bottom: 0.75rem; }
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}

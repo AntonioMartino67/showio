@@ -10,7 +10,7 @@
 
   <div class="content">
     @if (loading()) {
-      <p class="empty">Caricamento...</p>
+      <app-loader label="Carico il calendario..." />
     } @else if (items().length === 0) {
       <p class="empty">Nessun episodio in arrivo per le serie che segui.</p>
     } @else {

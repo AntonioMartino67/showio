@@ -83,6 +83,8 @@ type UpdateEpisodeRequest struct {
 }
 
 // UpdateEpisodeHandler aggiorna a che episodio/stagione è arrivato l'utente
+// UpdateEpisodeHandler aggiorna a che episodio/stagione è arrivato l'utente.
+// Applica anche una logica di auto-status.
 func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(auth.UserIDKey).(string)
 	mediaItemID := chi.URLParam(r, "mediaItemId")
@@ -93,12 +95,45 @@ func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var currentStatus string
+	err := database.Pool.QueryRow(r.Context(),
+		`SELECT status FROM user_progress WHERE user_id = $1 AND media_item_id = $2`,
+		userID, mediaItemID,
+	).Scan(&currentStatus)
+	if err != nil {
+		http.Error(w, "Progresso non trovato", http.StatusNotFound)
+		return
+	}
+
+	newStatus := currentStatus
+	if currentStatus == "plan_to_watch" {
+		newStatus = "watching"
+	}
+
+	var lastSeason, lastEpisode int
+	err = database.Pool.QueryRow(r.Context(), `
+		SELECT s.season_number, e.episode_number
+		FROM episodes e
+		JOIN seasons s ON s.id = e.season_id
+		WHERE s.media_item_id = $1
+		ORDER BY s.season_number DESC, e.episode_number DESC
+		LIMIT 1
+	`, mediaItemID).Scan(&lastSeason, &lastEpisode)
+	if err == nil {
+		if req.CurrentSeason > lastSeason ||
+			(req.CurrentSeason == lastSeason && req.CurrentEpisode >= lastEpisode) {
+			newStatus = "completed"
+		} else if newStatus == "completed" {
+			newStatus = "watching"
+		}
+	}
+
 	query := `
 		UPDATE user_progress
-		SET current_season = $1, current_episode = $2, last_watched_at = CURRENT_TIMESTAMP
-		WHERE user_id = $3 AND media_item_id = $4
+		SET current_season = $1, current_episode = $2, status = $3, last_watched_at = CURRENT_TIMESTAMP
+		WHERE user_id = $4 AND media_item_id = $5
 	`
-	tag, err := database.Pool.Exec(r.Context(), query, req.CurrentSeason, req.CurrentEpisode, userID, mediaItemID)
+	tag, err := database.Pool.Exec(r.Context(), query, req.CurrentSeason, req.CurrentEpisode, newStatus, userID, mediaItemID)
 	if err != nil || tag.RowsAffected() == 0 {
 		http.Error(w, "Progresso non trovato", http.StatusNotFound)
 		return

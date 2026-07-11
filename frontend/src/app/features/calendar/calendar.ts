@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MediaService } from '../../core/services/media.service';
 import { UpcomingEpisode } from '../../core/models/models';
+import { Loader } from '../../shared/loader/loader';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, Loader],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss'
 })

@@ -17,6 +17,7 @@ export class Search {
   results = signal<SearchResult[]>([]);
   loading = signal(false);
   addedIds = signal<Set<string>>(new Set());
+  skeletonItems = Array.from({ length: 8 });
 
   constructor(private media: MediaService) {}
 

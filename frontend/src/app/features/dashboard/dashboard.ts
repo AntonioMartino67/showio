@@ -5,11 +5,12 @@ import { MediaService } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
 import { ProgressItem } from '../../core/models/models';
 import { MediaModal } from '../../shared/media-modal/media-modal';
+import { Loader } from '../../shared/loader/loader';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, MediaModal],
+  imports: [CommonModule, RouterLink, MediaModal, Loader],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })
