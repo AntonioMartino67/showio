@@ -75,6 +75,7 @@ func MediaDetailHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	detail.Episodes = []EpisodeDetail{}
 	rows, err := database.Pool.Query(r.Context(),
 		`SELECT s.season_number, e.episode_number, e.title, e.air_date::text
 		 FROM episodes e JOIN seasons s ON s.id = e.season_id

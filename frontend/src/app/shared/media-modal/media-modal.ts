@@ -35,8 +35,8 @@ export class MediaModal implements OnChanges {
     this.media.getTags().subscribe({ next: (tags) => this.allTags.set(tags) });
   }
 
-  load() {
-    this.loading.set(true);
+  load(silent = false) {
+    if (!silent) this.loading.set(true);
     this.media.getMediaDetail(this.mediaItemId).subscribe({
       next: (data) => { this.detail.set(data); this.loading.set(false); },
       error: () => this.loading.set(false)
@@ -46,11 +46,11 @@ export class MediaModal implements OnChanges {
   close() { this.closed.emit(); }
 
   addToList(status: ProgressStatus = 'plan_to_watch') {
-    this.media.addProgress(this.mediaItemId, status).subscribe(() => { this.load(); this.changed.emit(); });
+    this.media.addProgress(this.mediaItemId, status).subscribe(() => { this.load(true); this.changed.emit(); });
   }
 
   changeStatus(status: ProgressStatus) {
-    this.media.addProgress(this.mediaItemId, status).subscribe(() => { this.load(); this.changed.emit(); });
+    this.media.addProgress(this.mediaItemId, status).subscribe(() => { this.load(true); this.changed.emit(); });
   }
 
   markWatched(season: number, episode: number) {
@@ -63,14 +63,14 @@ export class MediaModal implements OnChanges {
     const prev = idx > 0 ? d.episodes[idx - 1] : null;
     const prevSeason = prev ? prev.season_number : 0;
     const prevEpisode = prev ? prev.episode_number : 0;
-    this.media.updateEpisode(this.mediaItemId, prevSeason, prevEpisode).subscribe(() => { this.load(); this.changed.emit(); });
+    this.media.updateEpisode(this.mediaItemId, prevSeason, prevEpisode).subscribe(() => { this.load(true); this.changed.emit(); });
   } else {
-    this.media.updateEpisode(this.mediaItemId, season, episode).subscribe(() => { this.load(); this.changed.emit(); });
+    this.media.updateEpisode(this.mediaItemId, season, episode).subscribe(() => { this.load(true); this.changed.emit(); });
   }
 }
 
   setRating(rating: number) {
-    this.media.updateRating(this.mediaItemId, rating).subscribe(() => this.load());
+    this.media.updateRating(this.mediaItemId, rating).subscribe(() => this.load(true));
   }
 
   remove() {
@@ -87,9 +87,9 @@ export class MediaModal implements OnChanges {
 
   toggleTag(tag: Tag) {
     if (this.hasTag(tag.id)) {
-      this.media.removeTag(this.mediaItemId, tag.id).subscribe(() => this.load());
+      this.media.removeTag(this.mediaItemId, tag.id).subscribe(() => this.load(true));
     } else {
-      this.media.assignTag(this.mediaItemId, tag.id).subscribe(() => this.load());
+      this.media.assignTag(this.mediaItemId, tag.id).subscribe(() => this.load(true));
     }
   }
 
@@ -99,7 +99,7 @@ export class MediaModal implements OnChanges {
       this.newTagName = '';
       this.showTagCreator.set(false);
       this.loadAllTags();
-      this.media.assignTag(this.mediaItemId, tag.id).subscribe(() => this.load());
+      this.media.assignTag(this.mediaItemId, tag.id).subscribe(() => this.load(true));
     });
   }
 }

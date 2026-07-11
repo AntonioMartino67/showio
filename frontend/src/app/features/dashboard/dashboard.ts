@@ -33,8 +33,8 @@ export class Dashboard implements OnInit {
     this.media.getTags().subscribe({ next: (tags) => this.allTags.set(tags) });
   }
 
-  load() {
-    this.loading.set(true);
+  load(silent = false) {
+    if (!silent) this.loading.set(true);
     this.media.getProgress().subscribe({
       next: (data) => {
         this.items.set(data);
@@ -60,19 +60,19 @@ export class Dashboard implements OnInit {
     this.media.deleteTag(tagId).subscribe(() => {
       if (this.selectedTagId() === tagId) this.selectedTagId.set(null);
       this.loadTags();
-      this.load();
+      this.load(true);
     });
   }
 
   onMediaChanged() {
-    this.load();
+    this.load(true);
     this.loadTags();
   }
 
   nextEpisode(item: ProgressItem) {
     const newEp = item.current_episode + 1;
     this.media.updateEpisode(item.media_item_id, item.current_season, newEp).subscribe(() => {
-      this.load();
+      this.load(true);
     });
   }
 

@@ -107,9 +107,21 @@ func SyncAllHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Auto-drop: segna come "dropped" i titoli in "watching" fermi da troppo tempo
+	autoDropped := 0
+	dropTag, err := database.Pool.Exec(context.Background(),
+		`UPDATE user_progress
+		 SET status = 'dropped'
+		 WHERE status = 'watching' AND last_watched_at < NOW() - INTERVAL '30 days'`,
+	)
+	if err == nil {
+		autoDropped = int(dropTag.RowsAffected())
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]int{
 		"serie_sincronizzate": synced,
 		"totale_trovate":      len(items),
+		"auto_droppati":       autoDropped,
 	})
 }
