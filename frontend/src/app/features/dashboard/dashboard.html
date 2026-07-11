@@ -19,6 +19,18 @@
       <button [class.active]="filter()==='dropped'" (click)="filter.set('dropped')">Abbandonati</button>
     </div>
 
+    @if (allTags().length > 0) {
+      <div class="tag-filters">
+        <span class="tag-filter-chip" [class.active]="selectedTagId() === null" (click)="selectedTagId.set(null)">Tutti i tag</span>
+        @for (tag of allTags(); track tag.id) {
+          <span class="tag-filter-chip" [class.active]="selectedTagId() === tag.id" [style.borderColor]="tag.color" [style.background]="selectedTagId() === tag.id ? tag.color : 'transparent'" [style.color]="selectedTagId() === tag.id ? '#000' : tag.color" (click)="selectedTagId.set(tag.id)">
+            {{ tag.name }}
+            <span class="remove-tag" (click)="deleteTag(tag.id, $event)">✕</span>
+          </span>
+        }
+      </div>
+    }
+
     @if (loading()) {
       <app-loader label="Carico la tua lista..." />
     } @else if (items().length === 0) {
@@ -38,6 +50,13 @@
               <h3>{{ item.title }}</h3>
               <span class="status" [class]="item.status">{{ item.status }}</span>
               <p class="episode">S{{ item.current_season }}E{{ item.current_episode }}</p>
+              @if (item.tags?.length) {
+                <div class="card-tags">
+                  @for (t of item.tags; track t.id) {
+                    <span class="mini-tag" [style.background]="t.color">{{ t.name }}</span>
+                  }
+                </div>
+              }
               <button (click)="$event.stopPropagation(); nextEpisode(item)">+1 Episodio</button>
             </div>
           </div>
@@ -46,6 +65,6 @@
     }
   </div>
   @if (selectedMediaId(); as id) {
-  <app-media-modal [mediaItemId]="id" (closed)="closeMedia()" (changed)="load()"></app-media-modal>
+  <app-media-modal [mediaItemId]="id" (closed)="closeMedia()" (changed)="onMediaChanged()"></app-media-modal>
   }
 </div>

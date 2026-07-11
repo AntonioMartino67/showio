@@ -30,6 +30,7 @@ export interface ProgressItem {
   title: string;
   type: string;
   poster_url?: string;
+  tags: Tag[];
 }
 
 export interface UpcomingEpisode {

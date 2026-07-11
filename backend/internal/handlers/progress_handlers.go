@@ -167,8 +167,7 @@ func UpdateEpisodeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// ListProgressHandler restituisce l'intera lista personale dell'utente,
-// unendo i dati di progresso con i metadati del contenuto (join)
+
 func ListProgressHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(auth.UserIDKey).(string)
 
@@ -198,9 +197,11 @@ func ListProgressHandler(w http.ResponseWriter, r *http.Request) {
 		Title          string  `json:"title"`
 		Type           string  `json:"type"`
 		PosterURL      *string `json:"poster_url,omitempty"`
+		Tags           []Tag   `json:"tags"`
 	}
 
 	results := []ProgressItem{}
+	indexByProgressID := map[string]int{}
 	for rows.Next() {
 		var item ProgressItem
 		if err := rows.Scan(
@@ -210,7 +211,29 @@ func ListProgressHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Errore durante la lettura dei dati", http.StatusInternalServerError)
 			return
 		}
+		item.Tags = []Tag{}
+		indexByProgressID[item.ProgressID] = len(results)
 		results = append(results, item)
+	}
+
+	tagRows, err := database.Pool.Query(r.Context(), `
+		SELECT pt.progress_id, t.id, t.name, t.color
+		FROM progress_tags pt
+		JOIN tags t ON t.id = pt.tag_id
+		JOIN user_progress up ON up.id = pt.progress_id
+		WHERE up.user_id = $1
+	`, userID)
+	if err == nil {
+		defer tagRows.Close()
+		for tagRows.Next() {
+			var progressID string
+			var t Tag
+			if tagRows.Scan(&progressID, &t.ID, &t.Name, &t.Color) == nil {
+				if idx, ok := indexByProgressID[progressID]; ok {
+					results[idx].Tags = append(results[idx].Tags, t)
+				}
+			}
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
