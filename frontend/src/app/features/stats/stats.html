@@ -1,0 +1,57 @@
+<div class="page">
+  <nav class="navbar">
+    <span class="logo">Showio</span>
+    <div class="nav-links">
+      <a routerLink="/dashboard">La mia lista</a>
+      <a routerLink="/search">Cerca</a>
+      <a routerLink="/calendar">Calendario</a>
+      <a routerLink="/stats" class="active">Statistiche</a>
+    </div>
+    <button class="logout" (click)="auth.logout()">Esci</button>
+  </nav>
+
+  <div class="content">
+    @if (loading()) {
+      <app-loader label="Calcolo le statistiche..." />
+    } @else if (stats(); as s) {
+      @if (s.total_titles === 0) {
+        <p class="empty">Aggiungi qualche titolo alla tua lista per vedere le statistiche.</p>
+      } @else {
+        <div class="summary-cards">
+          <div class="card-stat">
+            <span class="value">{{ s.total_titles }}</span>
+            <span class="label">Titoli totali</span>
+          </div>
+          <div class="card-stat">
+            <span class="value">{{ s.total_episodes_watched }}</span>
+            <span class="label">Episodi visti</span>
+          </div>
+          <div class="card-stat">
+            <span class="value">{{ s.average_rating ? (s.average_rating | number:'1.1-1') : '—' }}</span>
+            <span class="label">Voto medio ({{ s.rated_titles_count }} voti)</span>
+          </div>
+        </div>
+
+        <h2>Per stato</h2>
+        <div class="bar-chart">
+          @for (entry of statusEntries(); track entry[0]) {
+            <div class="bar-row">
+              <span class="bar-label">{{ statusLabel(entry[0]) }}</span>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width.%]="(entry[1] / maxStatusCount()) * 100"></div>
+              </div>
+              <span class="bar-value">{{ entry[1] }}</span>
+            </div>
+          }
+        </div>
+
+        <h2>Per tipo</h2>
+        <div class="type-badges">
+          @for (entry of typeEntries(); track entry[0]) {
+            <span class="type-badge">{{ entry[0] }}: {{ entry[1] }}</span>
+          }
+        </div>
+      }
+    }
+  </div>
+</div>

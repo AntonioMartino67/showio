@@ -60,3 +60,12 @@ export interface MediaDetail {
   rating?: number;
   episodes: EpisodeDetail[];
 }
+
+export interface Stats {
+  total_titles: number;
+  by_status: Record<string, number>;
+  by_type: Record<string, number>;
+  total_episodes_watched: number;
+  average_rating?: number;
+  rated_titles_count: number;
+}

@@ -25,6 +25,11 @@ export const routes: Routes = [
     loadComponent: () => import('./features/calendar/calendar').then(m => m.Calendar),
     canActivate: [authGuard]
   },
+  {
+    path: 'stats',
+    loadComponent: () => import('./features/stats/stats').then(m => m.StatsPage),
+    canActivate: [authGuard]
+  },
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: '**', redirectTo: '/dashboard' }
 ];

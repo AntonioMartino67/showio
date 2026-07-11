@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { SearchResult, ProgressItem, UpcomingEpisode, ProgressStatus, MediaDetail } from '../models/models';
+import { SearchResult, ProgressItem, UpcomingEpisode, ProgressStatus, MediaDetail, Stats } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
@@ -49,5 +49,9 @@ export class MediaService {
 
   getTrending() {
     return this.http.get<SearchResult[]>(`${environment.apiUrl}/trending`);
+  }
+
+  getStats() {
+    return this.http.get<Stats>(`${environment.apiUrl}/stats`);
   }
 }

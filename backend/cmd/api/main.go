@@ -62,6 +62,7 @@ func main() {
 		protected.Put("/progress/{mediaItemId}/rating", handlers.UpdateRatingHandler)
 		protected.Get("/media/{mediaItemId}", handlers.MediaDetailHandler)
 		protected.Get("/calendar", handlers.CalendarHandler)
+		protected.Get("/stats", handlers.StatsHandler)
 	})
 
 	r.Get("/search", handlers.SearchHandler)
