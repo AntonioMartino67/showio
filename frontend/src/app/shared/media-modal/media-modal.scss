@@ -43,3 +43,19 @@
   .body { flex-direction: column; }
   .poster-wrap { width: 140px; }
 }
+.tags-section {
+  margin: 1rem 0;
+  label { display: block; color: #888; font-size: 0.8rem; margin-bottom: 0.5rem; }
+}
+.tags-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tag-chip {
+  padding: 0.3rem 0.8rem; border-radius: 20px; border: 1px solid #333;
+  font-size: 0.75rem; cursor: pointer; transition: all 0.15s;
+  &.add-tag { color: #888; border-style: dashed; }
+}
+.tag-creator {
+  display: flex; gap: 0.5rem; margin-top: 0.6rem; align-items: center;
+  input[type="text"] { flex: 1; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid #333; background: #24242e; color: #fff; font-size: 0.8rem; }
+  input[type="color"] { width: 32px; height: 32px; border: none; background: none; cursor: pointer; }
+  button { padding: 0.4rem 0.8rem; border: none; border-radius: 6px; background: #00d4ff; color: #000; font-size: 0.8rem; font-weight: 600; cursor: pointer; }
+}

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { SearchResult, ProgressItem, UpcomingEpisode, ProgressStatus, MediaDetail, Stats } from '../models/models';
+import { SearchResult, ProgressItem, UpcomingEpisode, ProgressStatus, MediaDetail, Stats, Tag } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class MediaService {
@@ -53,5 +53,25 @@ export class MediaService {
 
   getStats() {
     return this.http.get<Stats>(`${environment.apiUrl}/stats`);
+  }
+
+  getTags() {
+    return this.http.get<Tag[]>(`${environment.apiUrl}/tags`);
+  }
+
+  createTag(name: string, color: string) {
+    return this.http.post<Tag>(`${environment.apiUrl}/tags`, { name, color });
+  }
+
+  deleteTag(tagId: string) {
+    return this.http.delete(`${environment.apiUrl}/tags/${tagId}`);
+  }
+
+  assignTag(mediaItemId: string, tagId: string) {
+    return this.http.post(`${environment.apiUrl}/progress/${mediaItemId}/tags`, { tag_id: tagId });
+  }
+
+  removeTag(mediaItemId: string, tagId: string) {
+    return this.http.delete(`${environment.apiUrl}/progress/${mediaItemId}/tags/${tagId}`);
   }
 }

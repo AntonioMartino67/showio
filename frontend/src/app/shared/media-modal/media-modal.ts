@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, signal } from '@angu
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MediaService } from '../../core/services/media.service';
-import { MediaDetail, ProgressStatus } from '../../core/models/models';
+import { MediaDetail, ProgressStatus, Tag } from '../../core/models/models';
 import { Loader } from '../loader/loader';
 
 @Component({
@@ -19,10 +19,21 @@ export class MediaModal implements OnChanges {
 
   detail = signal<MediaDetail | null>(null);
   loading = signal(true);
+  allTags = signal<Tag[]>([]);
+  newTagName = '';
+  newTagColor = '#00d4ff';
+  showTagCreator = signal(false);
 
   constructor(private media: MediaService) {}
 
-  ngOnChanges() { this.load(); }
+  ngOnChanges() {
+    this.load();
+    this.loadAllTags();
+  }
+
+  loadAllTags() {
+    this.media.getTags().subscribe({ next: (tags) => this.allTags.set(tags) });
+  }
 
   load() {
     this.loading.set(true);
@@ -68,5 +79,27 @@ export class MediaModal implements OnChanges {
 
   isPast(d: MediaDetail, season: number, episode: number): boolean {
     return season < d.current_season || (season === d.current_season && episode <= d.current_episode);
+  }
+
+  hasTag(tagId: string): boolean {
+    return this.detail()?.tags.some(t => t.id === tagId) ?? false;
+  }
+
+  toggleTag(tag: Tag) {
+    if (this.hasTag(tag.id)) {
+      this.media.removeTag(this.mediaItemId, tag.id).subscribe(() => this.load());
+    } else {
+      this.media.assignTag(this.mediaItemId, tag.id).subscribe(() => this.load());
+    }
+  }
+
+  createTag() {
+    if (!this.newTagName.trim()) return;
+    this.media.createTag(this.newTagName.trim(), this.newTagColor).subscribe((tag) => {
+      this.newTagName = '';
+      this.showTagCreator.set(false);
+      this.loadAllTags();
+      this.media.assignTag(this.mediaItemId, tag.id).subscribe(() => this.load());
+    });
   }
 }

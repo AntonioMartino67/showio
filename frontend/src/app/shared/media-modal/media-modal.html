@@ -43,6 +43,25 @@
               <button class="danger" (click)="remove()">Rimuovi dalla lista</button>
             </div>
 
+            <div class="tags-section">
+              <label>Tag</label>
+              <div class="tags-list">
+                @for (tag of allTags(); track tag.id) {
+                  <span class="tag-chip" [class.active]="hasTag(tag.id)" [style.borderColor]="tag.color" [style.color]="hasTag(tag.id) ? '#000' : tag.color" [style.background]="hasTag(tag.id) ? tag.color : 'transparent'" (click)="toggleTag(tag)">
+                    {{ tag.name }}
+                  </span>
+                }
+                <span class="tag-chip add-tag" (click)="showTagCreator.set(!showTagCreator())">+ Nuovo</span>
+              </div>
+              @if (showTagCreator()) {
+                <div class="tag-creator">
+                  <input type="text" [(ngModel)]="newTagName" placeholder="Nome tag" />
+                  <input type="color" [(ngModel)]="newTagColor" />
+                  <button (click)="createTag()">Crea</button>
+                </div>
+              }
+            </div>
+
             @if (d.episodes.length > 0) {
               <h2>Episodi</h2>
               <div class="episodes">

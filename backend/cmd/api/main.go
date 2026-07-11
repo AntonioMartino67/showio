@@ -63,6 +63,11 @@ func main() {
 		protected.Get("/media/{mediaItemId}", handlers.MediaDetailHandler)
 		protected.Get("/calendar", handlers.CalendarHandler)
 		protected.Get("/stats", handlers.StatsHandler)
+		protected.Get("/tags", handlers.ListTagsHandler)
+		protected.Post("/tags", handlers.CreateTagHandler)
+		protected.Delete("/tags/{tagId}", handlers.DeleteTagHandler)
+		protected.Post("/progress/{mediaItemId}/tags", handlers.AssignTagHandler)
+		protected.Delete("/progress/{mediaItemId}/tags/{tagId}", handlers.RemoveTagFromProgressHandler)
 	})
 
 	r.Get("/search", handlers.SearchHandler)

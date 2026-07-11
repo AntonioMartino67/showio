@@ -28,6 +28,7 @@ type MediaDetail struct {
 	CurrentEpisode int             `json:"current_episode"`
 	Rating         *int            `json:"rating,omitempty"`
 	Episodes       []EpisodeDetail `json:"episodes"`
+	Tags           []Tag           `json:"tags"`
 }
 
 // MediaDetailHandler restituisce i dettagli di un titolo, incluse le stagioni/episodi
@@ -46,12 +47,32 @@ func MediaDetailHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var status *string
+	var progressID *string
 	err = database.Pool.QueryRow(r.Context(),
-		`SELECT status, current_season, current_episode, rating FROM user_progress WHERE user_id = $1 AND media_item_id = $2`,
+		`SELECT id, status, current_season, current_episode, rating FROM user_progress WHERE user_id = $1 AND media_item_id = $2`,
 		userID, mediaItemID,
-	).Scan(&status, &detail.CurrentSeason, &detail.CurrentEpisode, &detail.Rating)
+	).Scan(&progressID, &status, &detail.CurrentSeason, &detail.CurrentEpisode, &detail.Rating)
 	if err == nil {
 		detail.Status = status
+	}
+
+	detail.Tags = []Tag{}
+	if progressID != nil {
+		tagRows, err := database.Pool.Query(r.Context(), `
+			SELECT t.id, t.name, t.color FROM tags t
+			JOIN progress_tags pt ON pt.tag_id = t.id
+			WHERE pt.progress_id = $1
+			ORDER BY t.name
+		`, *progressID)
+		if err == nil {
+			defer tagRows.Close()
+			for tagRows.Next() {
+				var t Tag
+				if tagRows.Scan(&t.ID, &t.Name, &t.Color) == nil {
+					detail.Tags = append(detail.Tags, t)
+				}
+			}
+		}
 	}
 
 	rows, err := database.Pool.Query(r.Context(),

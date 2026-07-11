@@ -48,6 +48,12 @@ export interface EpisodeDetail {
   air_date?: string;
 }
 
+export interface Tag {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export interface MediaDetail {
   media_item_id: string;
   title: string;
@@ -59,6 +65,7 @@ export interface MediaDetail {
   current_episode: number;
   rating?: number;
   episodes: EpisodeDetail[];
+  tags: Tag[];
 }
 
 export interface Stats {
