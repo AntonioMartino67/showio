@@ -1,22 +1,27 @@
 <div class="auth-page">
-  <form class="auth-card" (ngSubmit)="submit()">
+  <div class="auth-card">
     <h1>Showio</h1>
     <p class="subtitle">Accedi al tuo account</p>
 
-    <label>Email</label>
-    <input type="email" [(ngModel)]="email" name="email" required />
+    <div id="google-btn" class="google-btn-wrap"></div>
+    <div class="divider"><span>oppure</span></div>
 
-    <label>Password</label>
-    <input type="password" [(ngModel)]="password" name="password" required />
+    <form (ngSubmit)="submit()">
+      <label>Email</label>
+      <input type="email" [(ngModel)]="email" name="email" required />
 
-    @if (error()) {
-      <p class="error">{{ error() }}</p>
-    }
+      <label>Password</label>
+      <input type="password" [(ngModel)]="password" name="password" required />
 
-    <button type="submit" [disabled]="loading()">
-      {{ loading() ? 'Accesso...' : 'Accedi' }}
-    </button>
+      @if (error()) {
+        <p class="error">{{ error() }}</p>
+      }
+
+      <button type="submit" [disabled]="loading()">
+        {{ loading() ? 'Accesso...' : 'Accedi' }}
+      </button>
+    </form>
 
     <p class="link">Non hai un account? <a routerLink="/register">Registrati</a></p>
-  </form>
+  </div>
 </div>

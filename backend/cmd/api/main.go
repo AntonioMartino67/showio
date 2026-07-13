@@ -50,6 +50,7 @@ func main() {
 	
 	r.Post("/register", handlers.RegisterHandler)
 	r.Post("/login", handlers.LoginHandler)
+	r.Post("/auth/google", handlers.GoogleLoginHandler)
 	r.Post("/cron/sync-all", handlers.SyncAllHandler)
 
 	r.Group(func(protected chi.Router) {

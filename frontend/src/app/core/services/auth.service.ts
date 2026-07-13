@@ -25,6 +25,15 @@ export class AuthService {
     );
   }
 
+  loginWithGoogle(credential: string) {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/auth/google`, { credential }).pipe(
+      tap(res => {
+        localStorage.setItem(this.tokenKey, res.token);
+        this.loadUser().subscribe();
+      })
+    );
+  }
+
   loadUser() {
     return this.http.get<User>(`${environment.apiUrl}/me`).pipe(
       tap(user => this.currentUser.set(user))

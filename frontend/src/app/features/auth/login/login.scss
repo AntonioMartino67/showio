@@ -84,4 +84,28 @@
       text-decoration: none;
     }
   }
+
+  .google-btn-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+    margin: 1.25rem 0;
+
+    &::before, &::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid #333;
+    }
+
+    span {
+      padding: 0 0.75rem;
+    }
+  }
 }

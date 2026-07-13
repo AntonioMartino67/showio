@@ -1,8 +1,11 @@
-import { Component, signal } from '@angular/core';
+import { Component, AfterViewInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
+
+declare const google: any;
 
 @Component({
   selector: 'app-login',
@@ -11,7 +14,7 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.scss'
 })
-export class Login {
+export class Login implements AfterViewInit {
   email = '';
   password = '';
   error = signal('');
@@ -30,6 +33,33 @@ export class Login {
       error: () => {
         this.loading.set(false);
         this.error.set('Email o password non validi');
+      }
+    });
+  }
+
+  ngAfterViewInit() {
+    if (typeof google === 'undefined') return;
+    google.accounts.id.initialize({
+      client_id: environment.googleClientId,
+      callback: (response: any) => this.handleGoogleResponse(response)
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('google-btn'),
+      { theme: 'outline', size: 'large', width: 320 }
+    );
+  }
+
+  handleGoogleResponse(response: any) {
+    this.error.set('');
+    this.loading.set(true);
+    this.auth.loginWithGoogle(response.credential).subscribe({
+      next: () => {
+        this.loading.set(false);
+        this.router.navigate(['/dashboard']);
+      },
+      error: () => {
+        this.loading.set(false);
+        this.error.set('Accesso con Google fallito');
       }
     });
   }
