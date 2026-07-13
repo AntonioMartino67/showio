@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"crypto/rand"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+	"time"
 
 	"github.com/AntonioMartino67/showio/backend/internal/auth"
 	"github.com/AntonioMartino67/showio/backend/internal/database"
+	"github.com/AntonioMartino67/showio/backend/internal/email"
 )
 
 type RegisterRequest struct {
@@ -20,6 +25,16 @@ type RegisterResponse struct {
 	Email    string `json:"email"`
 }
 
+func generateOTP() string {
+	digits := make([]byte, 6)
+	rand.Read(digits)
+	code := ""
+	for _, d := range digits {
+		code += fmt.Sprintf("%d", int(d)%10)
+	}
+	return code
+}
+
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	var req RegisterRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -27,7 +42,6 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validazione minima
 	if req.Username == "" || req.Email == "" || req.Password == "" {
 		http.Error(w, "Username, email e password sono obbligatori", http.StatusBadRequest)
 		return
@@ -43,15 +57,24 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	otp := generateOTP()
+	expiresAt := time.Now().Add(10 * time.Minute)
+
 	var newID string
 	query := `
-		INSERT INTO users (username, email, password_hash)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (username, email, password_hash, email_verified, otp_code, otp_expires_at)
+		VALUES ($1, $2, $3, false, $4, $5)
 		RETURNING id
 	`
-	err = database.Pool.QueryRow(r.Context(), query, req.Username, req.Email, hash).Scan(&newID)
+	err = database.Pool.QueryRow(r.Context(), query, req.Username, req.Email, hash, otp, expiresAt).Scan(&newID)
 	if err != nil {
 		http.Error(w, "Username o email già in uso", http.StatusConflict)
+		return
+	}
+
+	if err := email.SendOTPEmail(req.Email, otp); err != nil {
+		log.Println("Errore invio email:", err)
+		http.Error(w, "Utente creato ma invio email fallito, riprova con /resend-otp", http.StatusInternalServerError)
 		return
 	}
 
@@ -64,6 +87,101 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(resp)
+}
+
+type VerifyOTPRequest struct {
+	Email string `json:"email"`
+	Code  string `json:"code"`
+}
+
+func VerifyOTPHandler(w http.ResponseWriter, r *http.Request) {
+	var req VerifyOTPRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Corpo della richiesta non valido", http.StatusBadRequest)
+		return
+	}
+
+	var userID, storedCode string
+	var expiresAt time.Time
+	query := `SELECT id, otp_code, otp_expires_at FROM users WHERE email = $1 AND deleted_at IS NULL`
+	err := database.Pool.QueryRow(r.Context(), query, req.Email).Scan(&userID, &storedCode, &expiresAt)
+	if err != nil {
+		http.Error(w, "Utente non trovato", http.StatusNotFound)
+		return
+	}
+
+	if storedCode == "" || req.Code != storedCode {
+		http.Error(w, "Codice non valido", http.StatusBadRequest)
+		return
+	}
+	if time.Now().After(expiresAt) {
+		http.Error(w, "Codice scaduto, richiedine uno nuovo", http.StatusBadRequest)
+		return
+	}
+
+	_, err = database.Pool.Exec(r.Context(),
+		`UPDATE users SET email_verified = true, otp_code = NULL, otp_expires_at = NULL WHERE id = $1`,
+		userID,
+	)
+	if err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
+		return
+	}
+
+	token, err := auth.GenerateJWT(userID)
+	if err != nil {
+		http.Error(w, "Errore interno durante il login", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(LoginResponse{Token: token})
+}
+
+type ResendOTPRequest struct {
+	Email string `json:"email"`
+}
+
+func ResendOTPHandler(w http.ResponseWriter, r *http.Request) {
+	var req ResendOTPRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Corpo della richiesta non valido", http.StatusBadRequest)
+		return
+	}
+
+	var userID string
+	var verified bool
+	err := database.Pool.QueryRow(r.Context(),
+		`SELECT id, email_verified FROM users WHERE email = $1 AND deleted_at IS NULL`,
+		req.Email,
+	).Scan(&userID, &verified)
+	if err != nil {
+		http.Error(w, "Utente non trovato", http.StatusNotFound)
+		return
+	}
+	if verified {
+		http.Error(w, "Email già verificata", http.StatusBadRequest)
+		return
+	}
+
+	otp := generateOTP()
+	expiresAt := time.Now().Add(10 * time.Minute)
+
+	_, err = database.Pool.Exec(r.Context(),
+		`UPDATE users SET otp_code = $1, otp_expires_at = $2 WHERE id = $3`,
+		otp, expiresAt, userID,
+	)
+	if err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
+		return
+	}
+
+	if err := email.SendOTPEmail(req.Email, otp); err != nil {
+		http.Error(w, "Invio email fallito", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 type LoginRequest struct {
@@ -83,8 +201,9 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var userID, passwordHash string
-	query := `SELECT id, password_hash FROM users WHERE email = $1 AND deleted_at IS NULL`
-	err := database.Pool.QueryRow(r.Context(), query, req.Email).Scan(&userID, &passwordHash)
+	var emailVerified bool
+	query := `SELECT id, password_hash, email_verified FROM users WHERE email = $1 AND deleted_at IS NULL`
+	err := database.Pool.QueryRow(r.Context(), query, req.Email).Scan(&userID, &passwordHash, &emailVerified)
 	if err != nil {
 		http.Error(w, "Credenziali non valide", http.StatusUnauthorized)
 		return
@@ -92,6 +211,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	if !auth.CheckPassword(req.Password, passwordHash) {
 		http.Error(w, "Credenziali non valide", http.StatusUnauthorized)
+		return
+	}
+
+	if !emailVerified {
+		http.Error(w, "Email non verificata, controlla la tua casella di posta", http.StatusForbidden)
 		return
 	}
 

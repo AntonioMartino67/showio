@@ -24,8 +24,6 @@ type googleTokenInfo struct {
 	Aud           string `json:"aud"`
 }
 
-// GoogleLoginHandler autentica (o registra al volo) un utente a partire dal
-// token ID restituito da Google Identity Services sul frontend.
 func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 	var req GoogleLoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Credential == "" {
@@ -49,25 +47,21 @@ func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// L'utente ha già effettuato l'accesso con Google in passato?
 	var userID string
 	err = database.Pool.QueryRow(r.Context(),
 		`SELECT id FROM users WHERE google_id = $1`, info.Sub,
 	).Scan(&userID)
 
 	if err != nil {
-		// Nessun account collegato a questo Google ID: se esiste già un utente
-		// con la stessa email (registrato con password) lo colleghiamo,
-		// altrimenti creiamo un nuovo account.
 		err = database.Pool.QueryRow(r.Context(),
-			`UPDATE users SET google_id = $1 WHERE email = $2 RETURNING id`,
+			`UPDATE users SET google_id = $1, email_verified = true WHERE email = $2 RETURNING id`,
 			info.Sub, info.Email,
 		).Scan(&userID)
 
 		if err != nil {
 			username := generateUsernameFromEmail(r, info.Email)
 			err = database.Pool.QueryRow(r.Context(),
-				`INSERT INTO users (username, email, google_id) VALUES ($1, $2, $3) RETURNING id`,
+				`INSERT INTO users (username, email, google_id, email_verified) VALUES ($1, $2, $3, true) RETURNING id`,
 				username, info.Email, info.Sub,
 			).Scan(&userID)
 			if err != nil {
@@ -87,9 +81,6 @@ func GoogleLoginHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(LoginResponse{Token: token})
 }
 
-// verifyGoogleToken valida il token ID interrogando l'endpoint tokeninfo di Google.
-// Non richiede librerie esterne: Google firma il token e questo endpoint
-// verifica firma/scadenza per noi, restituendo i claim in chiaro.
 func verifyGoogleToken(credential string) (*googleTokenInfo, error) {
 	resp, err := http.Get("https://oauth2.googleapis.com/tokeninfo?id_token=" + credential)
 	if err != nil {
@@ -113,8 +104,6 @@ func verifyGoogleToken(credential string) (*googleTokenInfo, error) {
 	return &info, nil
 }
 
-// generateUsernameFromEmail deriva uno username dalla parte locale dell'email,
-// aggiungendo un suffisso numerico in caso di collisione
 func generateUsernameFromEmail(r *http.Request, email string) string {
 	base := strings.Split(email, "@")[0]
 	username := base
