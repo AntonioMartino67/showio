@@ -18,6 +18,7 @@ export class Register implements AfterViewInit {
   username = '';
   email = '';
   password = '';
+  confirmPassword = '';
   error = signal('');
   loading = signal(false);
 
@@ -52,6 +53,10 @@ export class Register implements AfterViewInit {
 
   submit() {
     this.error.set('');
+    if (this.password !== this.confirmPassword) {
+      this.error.set('Le password non coincidono');
+      return;
+    }
     this.loading.set(true);
     this.auth.register(this.username, this.email, this.password).subscribe({
       next: () => {
