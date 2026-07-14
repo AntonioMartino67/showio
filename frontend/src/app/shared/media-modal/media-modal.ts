@@ -53,6 +53,13 @@ export class MediaModal implements OnChanges {
     this.media.addProgress(this.mediaItemId, status).subscribe(() => { this.load(true); this.changed.emit(); });
   }
 
+  toggleMovieCompleted() {
+    const d = this.detail();
+    if (!d) return;
+    const newStatus: ProgressStatus = d.status === 'completed' ? 'plan_to_watch' : 'completed';
+    this.changeStatus(newStatus);
+  }
+
   markWatched(season: number, episode: number) {
   const d = this.detail();
   if (!d) return;

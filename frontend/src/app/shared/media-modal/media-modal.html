@@ -21,16 +21,18 @@
             <button class="primary" (click)="addToList()">Aggiungi alla lista</button>
           } @else {
             <div class="controls">
-              <label>Stato</label>
-              <select [ngModel]="d.status" (ngModelChange)="changeStatus($event)">
-                <option value="plan_to_watch">Da vedere</option>
-                <option value="watching">In corso</option>
-                <option value="completed">Completato</option>
-                <option value="dropped">Abbandonato</option>
-              </select>
-
-              @if (d.type === 'movie' && d.status !== 'completed') {
-                <button class="primary" (click)="changeStatus('completed')">Segna come visto</button>
+              @if (d.type === 'movie') {
+                <button class="primary" (click)="toggleMovieCompleted()">
+                  {{ d.status === 'completed' ? '✓ Visto' : 'Segna come completato' }}
+                </button>
+              } @else {
+                <label>Stato</label>
+                <select [ngModel]="d.status" (ngModelChange)="changeStatus($event)">
+                  <option value="plan_to_watch">Da vedere</option>
+                  <option value="watching">In corso</option>
+                  <option value="completed">Completato</option>
+                  <option value="dropped">Abbandonato</option>
+                </select>
               }
 
               <label>Voto</label>
