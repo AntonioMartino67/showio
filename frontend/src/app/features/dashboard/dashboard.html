@@ -49,7 +49,9 @@
             <div class="card-body">
               <h3>{{ item.title }}</h3>
               <span class="status" [class]="item.status">{{ item.status }}</span>
-              <p class="episode">S{{ item.current_season }}E{{ item.current_episode }}</p>
+              @if (item.type !== 'movie') {
+                <p class="episode">S{{ item.current_season }}E{{ item.current_episode }}</p>
+              }
               @if (item.tags?.length) {
                 <div class="card-tags">
                   @for (t of item.tags; track t.id) {
@@ -57,7 +59,9 @@
                   }
                 </div>
               }
-              <button (click)="$event.stopPropagation(); nextEpisode(item)">+1 Episodio</button>
+              @if (item.type !== 'movie' && item.status !== 'completed') {
+                <button (click)="$event.stopPropagation(); nextEpisode(item)">Episodio successivo</button>
+              }
             </div>
           </div>
         }
