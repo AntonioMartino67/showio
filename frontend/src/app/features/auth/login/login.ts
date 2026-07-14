@@ -30,8 +30,13 @@ export class Login implements AfterViewInit {
         this.loading.set(false);
         this.router.navigate(['/dashboard']);
       },
-      error: () => {
+      error: (err) => {
         this.loading.set(false);
+        if (err.status === 403) {
+          this.auth.resendOtp(this.email).subscribe();
+          this.router.navigate(['/verify-otp'], { queryParams: { email: this.email } });
+          return;
+        }
         this.error.set('Email o password non validi');
       }
     });
