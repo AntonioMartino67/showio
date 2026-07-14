@@ -11,6 +11,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register/register').then(m => m.Register)
   },
   {
+    path: 'verify-otp',
+    loadComponent: () => import('./features/auth/verify-otp/verify-otp').then(m => m.VerifyOtp)
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./features/dashboard/dashboard').then(m => m.Dashboard),
     canActivate: [authGuard]

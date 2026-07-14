@@ -1,0 +1,27 @@
+<div class="auth-page">
+  <form class="auth-card" (ngSubmit)="submit()">
+    <h1>Showio</h1>
+    <p class="subtitle">Verifica la tua email</p>
+    <p class="subtitle">Codice inviato a {{ email }}</p>
+
+    <label>Codice OTP</label>
+    <input type="text" [(ngModel)]="code" name="code" maxlength="6" required />
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+    @if (info()) {
+      <p class="info">{{ info() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      {{ loading() ? 'Verifica...' : 'Verifica' }}
+    </button>
+
+    <button type="button" [disabled]="resending()" (click)="resend()">
+      {{ resending() ? 'Invio...' : 'Invia di nuovo il codice' }}
+    </button>
+
+    <p class="link"><a routerLink="/login">Torna al login</a></p>
+  </form>
+</div>

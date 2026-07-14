@@ -1,0 +1,92 @@
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0f0f14;
+}
+
+.auth-card {
+  background: #1a1a22;
+  padding: 2.5rem;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+
+  h1 {
+    color: #fff;
+    margin: 0 0 0.25rem;
+    font-size: 1.75rem;
+  }
+
+  .subtitle {
+    color: #888;
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+  }
+
+  label {
+    display: block;
+    color: #ccc;
+    font-size: 0.85rem;
+    margin: 1rem 0 0.35rem;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.65rem 0.8rem;
+    border-radius: 8px;
+    border: 1px solid #333;
+    background: #24242e;
+    color: #fff;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: #00d4ff;
+    }
+  }
+
+  .error {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    margin: 0.75rem 0 0;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #00d4ff, #0088ff);
+    color: #000;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .link {
+    text-align: center;
+    margin-top: 1.25rem;
+    color: #888;
+    font-size: 0.85rem;
+
+    a {
+      color: #00d4ff;
+      text-decoration: none;
+    }
+  }
+
+  .info {
+  color: #4caf50;
+  font-size: 0.9rem;
+    }
+}

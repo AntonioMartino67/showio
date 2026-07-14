@@ -16,6 +16,19 @@ export class AuthService {
     return this.http.post(`${environment.apiUrl}/register`, { username, email, password });
   }
 
+  verifyOtp(email: string, code: string) {
+    return this.http.post<AuthResponse>(`${environment.apiUrl}/verify-otp`, { email, code }).pipe(
+      tap(res => {
+        localStorage.setItem(this.tokenKey, res.token);
+        this.loadUser().subscribe();
+      })
+    );
+  }
+
+  resendOtp(email: string) {
+    return this.http.post(`${environment.apiUrl}/resend-otp`, { email });
+  }
+
   login(email: string, password: string) {
     return this.http.post<AuthResponse>(`${environment.apiUrl}/login`, { email, password }).pipe(
       tap(res => {

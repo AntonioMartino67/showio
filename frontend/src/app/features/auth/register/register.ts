@@ -60,16 +60,8 @@ export class Register implements AfterViewInit {
     this.loading.set(true);
     this.auth.register(this.username, this.email, this.password).subscribe({
       next: () => {
-        this.auth.login(this.email, this.password).subscribe({
-          next: () => {
-            this.loading.set(false);
-            this.router.navigate(['/dashboard']);
-          },
-          error: () => {
-            this.loading.set(false);
-            this.router.navigate(['/login']);
-          }
-        });
+        this.loading.set(false);
+        this.router.navigate(['/verify-otp'], { queryParams: { email: this.email } });
       },
       error: (err) => {
         this.loading.set(false);
