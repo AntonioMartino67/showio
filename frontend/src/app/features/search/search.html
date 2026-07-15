@@ -1,7 +1,6 @@
 <div class="page">
   <nav class="navbar">
-    <span class="logo">Showio</span>
-    <div class="nav-links">
+      <span class="logo" routerLink="/dashboard">Showio</span>    <div class="nav-links">
       <a routerLink="/dashboard">La mia lista</a>
       <a routerLink="/search" class="active">Cerca</a>
       <a routerLink="/calendar">Calendario</a>
@@ -12,8 +11,25 @@
 
   <div class="content">
     <form class="search-bar" (ngSubmit)="submit()">
-      <input type="text" [(ngModel)]="query" name="query" placeholder="Cerca film, serie, anime..." (ngModelChange)="onQueryChange()" />
+      <input type="text" [(ngModel)]="query" name="query" placeholder="Cerca film, serie, anime..."
+        (ngModelChange)="onQueryChange()" (focus)="onFocus()" (blur)="onBlur()" autocomplete="off" />
       <button type="submit">Cerca</button>
+
+      @if (showDropdown() && !showingTrending() && results().length > 0) {
+        <ul class="suggestions-dropdown">
+          @for (item of results().slice(0, 6); track item.media_item_id) {
+            <li (mousedown)="selectSuggestion(item)">
+              @if (item.poster_url) {
+                <img [src]="(item.source === 'tmdb' ? 'https://image.tmdb.org/t/p/w92' : '') + item.poster_url" [alt]="item.title" />
+              } @else {
+                <div class="no-poster-sm"></div>
+              }
+              <span class="s-title">{{ item.title }}</span>
+              <span class="s-type">{{ item.type }}</span>
+            </li>
+          }
+        </ul>
+      }
     </form>
 
     @if (loading()) {

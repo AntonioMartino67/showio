@@ -79,4 +79,9 @@ export class Dashboard implements OnInit {
   selectedMediaId = signal<string | null>(null);
   openMedia(id: string) { this.selectedMediaId.set(id); }
   closeMedia() { this.selectedMediaId.set(null); }
+
+  goToList() {
+    this.filter.set('all');
+    this.selectedTagId.set(null);
+  }
 }

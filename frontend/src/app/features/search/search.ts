@@ -24,6 +24,7 @@ export class Search implements OnInit, OnDestroy {
   skeletonItems = Array.from({ length: 8 });
   showingTrending = signal(false);
   selectedMediaId = signal<string | null>(null);
+  showDropdown = signal(false);
 
   private queryChanged = new Subject<string>();
 
@@ -84,6 +85,21 @@ export class Search implements OnInit, OnDestroy {
 
   onQueryChange() {
     this.queryChanged.next(this.query);
+    this.showDropdown.set(this.query.trim().length > 0);
+  }
+
+  onFocus() {
+    if (this.query.trim().length > 0) this.showDropdown.set(true);
+  }
+
+  onBlur() {
+    // ritardo per permettere il click sulla dropdown prima che si chiuda
+    setTimeout(() => this.showDropdown.set(false), 150);
+  }
+
+  selectSuggestion(item: SearchResult) {
+    this.showDropdown.set(false);
+    this.openMedia(item.media_item_id);
   }
 
   submit() {
