@@ -1,6 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { MediaService } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Stats } from '../../core/models/models';
@@ -10,7 +9,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 @Component({
   selector: 'app-stats',
   standalone: true,
-  imports: [CommonModule, RouterLink, Loader, Navbar],
+  imports: [CommonModule, Loader, Navbar],
   templateUrl: './stats.html',
   styleUrl: './stats.scss'
 })

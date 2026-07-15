@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MediaService } from '../../core/services/media.service';
@@ -13,7 +12,7 @@ import { Navbar } from '../../shared/navbar/navbar';
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MediaModal, Navbar],
+  imports: [CommonModule, FormsModule, MediaModal, Navbar],
   templateUrl: './search.html',
   styleUrl: './search.scss'
 })
