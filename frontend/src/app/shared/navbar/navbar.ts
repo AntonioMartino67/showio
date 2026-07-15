@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -10,5 +10,15 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './navbar.scss'
 })
 export class Navbar {
+  menuOpen = signal(false);
+
   constructor(public auth: AuthService) {}
+
+  toggleMenu() {
+    this.menuOpen.update(v => !v);
+  }
+
+  closeMenu() {
+    this.menuOpen.set(false);
+  }
 }

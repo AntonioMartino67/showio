@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"database/sql"
 
 	"github.com/AntonioMartino67/showio/backend/internal/auth"
 	"github.com/AntonioMartino67/showio/backend/internal/database"
@@ -233,8 +234,9 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(auth.UserIDKey).(string)
 
 	var username, email string
-	query := `SELECT username, email FROM users WHERE id = $1`
-	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email)
+	var avatarURL sql.NullString
+	query := `SELECT username, email, avatar_url FROM users WHERE id = $1`
+	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL)
 	if err != nil {
 		http.Error(w, "Utente non trovato", http.StatusNotFound)
 		return
@@ -242,8 +244,30 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"id":       userID,
-		"username": username,
-		"email":    email,
+		"id":         userID,
+		"username":   username,
+		"email":      email,
+		"avatar_url": avatarURL.String,
 	})
+}
+
+func UpdateAvatarHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	var body struct {
+		AvatarURL string `json:"avatar_url"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Corpo richiesta non valido", http.StatusBadRequest)
+		return
+	}
+
+	_, err := database.Pool.Exec(r.Context(),
+		`UPDATE users SET avatar_url = $1 WHERE id = $2`, body.AvatarURL, userID)
+	if err != nil {
+		http.Error(w, "Errore aggiornamento avatar", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

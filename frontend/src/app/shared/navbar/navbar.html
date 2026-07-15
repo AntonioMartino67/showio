@@ -6,5 +6,22 @@
     <a routerLink="/calendar" routerLinkActive="active">Calendario</a>
     <a routerLink="/stats" routerLinkActive="active">Statistiche</a>
   </div>
-  <button class="logout" (click)="auth.logout()">Esci</button>
+
+  <div class="user-menu">
+    <button class="avatar-btn" (click)="toggleMenu()">
+      @if (auth.currentUser()?.avatar_url) {
+        <img [src]="auth.currentUser()!.avatar_url" alt="avatar" />
+      } @else {
+        {{ auth.currentUser()?.username?.charAt(0)?.toUpperCase() || '?' }}
+      }
+    </button>
+
+    @if (menuOpen()) {
+      <div class="dropdown">
+        <a routerLink="/profile" (click)="closeMenu()">Profilo</a>
+        <a routerLink="/stats" (click)="closeMenu()">Statistiche</a>
+        <button class="logout-item" (click)="auth.logout()">Esci</button>
+      </div>
+    }
+  </div>
 </nav>

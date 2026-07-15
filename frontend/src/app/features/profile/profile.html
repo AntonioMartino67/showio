@@ -1,0 +1,22 @@
+<div class="page">
+  <app-navbar />
+  <div class="content">
+    <h2>Profilo</h2>
+    @if (auth.currentUser(); as user) {
+      <div class="profile-card">
+        @if (user.avatar_url) {
+          <img class="avatar-preview" [src]="user.avatar_url" alt="avatar" />
+        }
+        <div class="row"><span class="label">Username</span><span>{{ user.username }}</span></div>
+        <div class="row"><span class="label">Email</span><span>{{ user.email }}</span></div>
+      </div>
+
+      <div class="profile-card avatar-form">
+        <label class="label">URL avatar</label>
+        <input type="text" [(ngModel)]="avatarUrl" placeholder="https://esempio.com/immagine.jpg" />
+        <button (click)="saveAvatar()" [disabled]="saving">{{ saving ? 'Salvo...' : 'Salva avatar' }}</button>
+        @if (message) { <p class="msg">{{ message }}</p> }
+      </div>
+    }
+  </div>
+</div>

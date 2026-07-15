@@ -53,6 +53,12 @@ export class AuthService {
     );
   }
 
+  updateAvatar(avatarUrl: string) {
+    return this.http.put(`${environment.apiUrl}/me/avatar`, { avatar_url: avatarUrl }).pipe(
+      tap(() => this.currentUser.update(u => u ? { ...u, avatar_url: avatarUrl } : u))
+    );
+  }
+
   logout() {
     localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);

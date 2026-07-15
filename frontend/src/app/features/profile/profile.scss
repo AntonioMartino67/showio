@@ -1,0 +1,82 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: #0f0f14;
+}
+
+.content {
+  padding: 2rem;
+  max-width: 500px;
+  margin: 0 auto;
+
+  h2 {
+    color: #fff;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.profile-card {
+  background: #1a1a22;
+  border-radius: 10px;
+  padding: 1.25rem;
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #2a2a35;
+
+    &:last-child { border-bottom: none; }
+
+    .label {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    span:last-child {
+      color: #fff;
+      font-size: 0.9rem;
+    }
+  }
+}
+
+.avatar-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto 1rem;
+}
+
+.avatar-form {
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+
+  .label { color: #888; font-size: 0.85rem; }
+
+  input {
+    padding: 0.6rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #24242e;
+    color: #fff;
+    font-size: 0.9rem;
+  }
+
+  button {
+    padding: 0.6rem;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #00d4ff, #0088ff);
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled { opacity: 0.6; cursor: default; }
+  }
+
+  .msg { color: #4caf50; font-size: 0.85rem; margin: 0; }
+}
