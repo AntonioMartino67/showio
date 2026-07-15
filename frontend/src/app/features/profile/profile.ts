@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { Navbar } from '../../shared/navbar/navbar';
+import { PasswordInput } from '../../shared/password-input/password-input';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, Navbar, FormsModule],
+  imports: [CommonModule, Navbar, FormsModule, PasswordInput],
   templateUrl: './profile.html',
   styleUrl: './profile.scss'
 })
@@ -68,6 +69,54 @@ export class Profile {
       img.onload = () => { clearTimeout(timeout); resolve(true); };
       img.onerror = () => { clearTimeout(timeout); resolve(false); };
       img.src = url;
+    });
+  }
+
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+  pwSaving = signal(false);
+  pwMessage = signal('');
+  pwIsError = signal(false);
+
+  changePassword() {
+    this.pwMessage.set('');
+    this.pwIsError.set(false);
+
+    const hasPassword = this.auth.currentUser()?.has_password;
+
+    if (hasPassword && !this.currentPassword) {
+      this.pwIsError.set(true);
+      this.pwMessage.set('Inserisci la password attuale');
+      return;
+    }
+    if (this.newPassword.length < 6) {
+      this.pwIsError.set(true);
+      this.pwMessage.set('La nuova password deve avere almeno 6 caratteri');
+      return;
+    }
+    if (this.newPassword !== this.confirmPassword) {
+      this.pwIsError.set(true);
+      this.pwMessage.set('Le password non coincidono');
+      return;
+    }
+
+    this.pwSaving.set(true);
+    this.auth.changePassword(this.currentPassword, this.newPassword).subscribe({
+      next: () => {
+        this.pwSaving.set(false);
+        this.pwIsError.set(false);
+        this.pwMessage.set('Password aggiornata ✅');
+        this.currentPassword = '';
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.auth.currentUser.update(u => u ? { ...u, has_password: true } : u);
+      },
+      error: (err) => {
+        this.pwSaving.set(false);
+        this.pwIsError.set(true);
+        this.pwMessage.set(err?.status === 403 ? 'Password attuale errata' : 'Errore durante il salvataggio');
+      }
     });
   }
 }

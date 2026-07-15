@@ -59,6 +59,13 @@ export class AuthService {
     );
   }
 
+  changePassword(currentPassword: string, newPassword: string) {
+    return this.http.put(`${environment.apiUrl}/me/password`, {
+      current_password: currentPassword,
+      new_password: newPassword
+    });
+  }
+
   logout() {
     localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);

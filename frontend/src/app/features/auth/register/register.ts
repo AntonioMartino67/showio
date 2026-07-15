@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { environment } from '../../../../environments/environment';
+import { PasswordInput } from '../../../shared/password-input/password-input';
 
 declare const google: any;
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, PasswordInput],
   templateUrl: './register.html',
   styleUrl: './register.scss'
 })

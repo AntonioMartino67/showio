@@ -13,10 +13,10 @@
     <input type="email" [(ngModel)]="email" name="email" required />
 
     <label>Password</label>
-    <input type="password" [(ngModel)]="password" name="password" required />
+    <app-password-input [(ngModel)]="password" name="password" />
 
     <label>Conferma Password</label>
-    <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
+    <app-password-input [(ngModel)]="confirmPassword" name="confirmPassword" />
 
     @if (error()) {
       <p class="error">{{ error() }}</p>

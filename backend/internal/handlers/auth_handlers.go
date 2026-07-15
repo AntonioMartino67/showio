@@ -234,21 +234,70 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(auth.UserIDKey).(string)
 
 	var username, email string
-	var avatarURL sql.NullString
-	query := `SELECT username, email, avatar_url FROM users WHERE id = $1`
-	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL)
+	var avatarURL, passwordHash sql.NullString
+	query := `SELECT username, email, avatar_url, password_hash FROM users WHERE id = $1`
+	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL, &passwordHash)
 	if err != nil {
 		http.Error(w, "Utente non trovato", http.StatusNotFound)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"id":         userID,
-		"username":   username,
-		"email":      email,
-		"avatar_url": avatarURL.String,
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"id":           userID,
+		"username":     username,
+		"email":        email,
+		"avatar_url":   avatarURL.String,
+		"has_password": passwordHash.Valid && passwordHash.String != "",
 	})
+}
+
+func ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	var body struct {
+		CurrentPassword string `json:"current_password"`
+		NewPassword     string `json:"new_password"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Corpo richiesta non valido", http.StatusBadRequest)
+		return
+	}
+	if len(body.NewPassword) < 6 {
+		http.Error(w, "La nuova password deve avere almeno 6 caratteri", http.StatusBadRequest)
+		return
+	}
+
+	var existingHash sql.NullString
+	err := database.Pool.QueryRow(r.Context(),
+		`SELECT password_hash FROM users WHERE id = $1`, userID,
+	).Scan(&existingHash)
+	if err != nil {
+		http.Error(w, "Utente non trovato", http.StatusNotFound)
+		return
+	}
+
+	if existingHash.Valid && existingHash.String != "" {
+		if body.CurrentPassword == "" || !auth.CheckPassword(body.CurrentPassword, existingHash.String) {
+			http.Error(w, "Password attuale errata", http.StatusForbidden)
+			return
+		}
+	}
+
+	newHash, err := auth.HashPassword(body.NewPassword)
+	if err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
+		return
+	}
+
+	_, err = database.Pool.Exec(r.Context(),
+		`UPDATE users SET password_hash = $1 WHERE id = $2`, newHash, userID)
+	if err != nil {
+		http.Error(w, "Errore aggiornamento password", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func UpdateAvatarHandler(w http.ResponseWriter, r *http.Request) {

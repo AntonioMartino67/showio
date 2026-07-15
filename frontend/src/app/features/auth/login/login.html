@@ -11,7 +11,7 @@
       <input type="email" [(ngModel)]="email" name="email" required />
 
       <label>Password</label>
-      <input type="password" [(ngModel)]="password" name="password" required />
+      <app-password-input [(ngModel)]="password" name="password" />
 
       @if (error()) {
         <p class="error">{{ error() }}</p>

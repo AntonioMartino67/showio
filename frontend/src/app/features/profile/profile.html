@@ -19,6 +19,24 @@
           <p class="msg" [class.error]="isError()">{{ message() }}</p>
         }
       </div>
+
+      <div class="profile-card avatar-form">
+        <label class="label">{{ user.has_password ? 'Cambia password' : 'Imposta una password' }}</label>
+
+        @if (user.has_password) {
+          <app-password-input [(ngModel)]="currentPassword" name="currentPassword" placeholder="Password attuale" />
+        }
+        <app-password-input [(ngModel)]="newPassword" name="newPassword" placeholder="Nuova password" />
+        <app-password-input [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Conferma nuova password" />
+
+        <button (click)="changePassword()" [disabled]="pwSaving()">
+          {{ pwSaving() ? 'Salvo...' : (user.has_password ? 'Aggiorna password' : 'Imposta password') }}
+        </button>
+
+        @if (pwMessage()) {
+          <p class="msg" [class.error]="pwIsError()">{{ pwMessage() }}</p>
+        }
+      </div>
     }
   </div>
 </div>
