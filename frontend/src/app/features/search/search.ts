@@ -8,11 +8,12 @@ import { MediaService } from '../../core/services/media.service';
 import { SearchResult } from '../../core/models/models';
 import { MediaModal } from '../../shared/media-modal/media-modal';
 import { AuthService } from '../../core/services/auth.service';
+import { Navbar } from '../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, MediaModal],
+  imports: [CommonModule, FormsModule, RouterLink, MediaModal, Navbar],
   templateUrl: './search.html',
   styleUrl: './search.scss'
 })

@@ -5,11 +5,12 @@ import { MediaService } from '../../core/services/media.service';
 import { AuthService } from '../../core/services/auth.service';
 import { UpcomingEpisode } from '../../core/models/models';
 import { Loader } from '../../shared/loader/loader';
+import { Navbar } from '../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-calendar',
   standalone: true,
-  imports: [CommonModule, RouterLink, Loader],
+  imports: [CommonModule, RouterLink, Loader, Navbar],
   templateUrl: './calendar.html',
   styleUrl: './calendar.scss'
 })

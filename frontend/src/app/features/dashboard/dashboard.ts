@@ -6,11 +6,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { ProgressItem, Tag } from '../../core/models/models';
 import { MediaModal } from '../../shared/media-modal/media-modal';
 import { Loader } from '../../shared/loader/loader';
+import { Navbar } from '../../shared/navbar/navbar';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, MediaModal, Loader],
+  imports: [CommonModule, RouterLink, MediaModal, Loader, Navbar],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss'
 })

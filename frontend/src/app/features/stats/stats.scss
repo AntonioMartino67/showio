@@ -4,42 +4,6 @@
   background: #0f0f14;
 }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  padding: 1rem 2rem;
-  background: #1a1a22;
-  border-bottom: 1px solid #2a2a35;
-
-  .logo { color: #00d4ff; font-weight: 700; font-size: 1.25rem; }
-
-  .nav-links {
-    display: flex;
-    gap: 1.5rem;
-    flex: 1;
-
-    a {
-      color: #888;
-      text-decoration: none;
-      font-size: 0.9rem;
-
-      &.active, &:hover { color: #fff; }
-    }
-  }
-
-  .logout {
-    padding: 0.4rem 0.9rem;
-    border: 1px solid #333;
-    border-radius: 6px;
-    background: transparent;
-    color: #888;
-    cursor: pointer;
-
-    &:hover { color: #fff; border-color: #555; }
-  }
-}
-
 .content {
   padding: 2rem;
   max-width: 700px;
@@ -137,8 +101,3 @@ h2 {
   text-transform: capitalize;
 }
 
-.logo {
-  color: #00d4ff;
-  font-weight: 700;
-  cursor: pointer;
-}

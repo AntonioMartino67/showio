@@ -1,13 +1,5 @@
 <div class="page">
-  <nav class="navbar">
-      <span class="logo" routerLink="/dashboard">Showio</span>    <div class="nav-links">
-      <a routerLink="/dashboard">La mia lista</a>
-      <a routerLink="/search">Cerca</a>
-      <a routerLink="/calendar" class="active">Calendario</a>
-      <a routerLink="/stats">Statistiche</a>
-    </div>
-    <button class="logout" (click)="auth.logout()">Esci</button>
-  </nav>
+  <app-navbar />
 
   <div class="content">
     @if (loading()) {
