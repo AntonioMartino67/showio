@@ -284,16 +284,73 @@ func ChangePasswordHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Controllo contro le ultime 5 password (inclusa quella attuale)
+	rows, err := database.Pool.Query(r.Context(),
+		`SELECT password_hash FROM password_history WHERE user_id = $1 ORDER BY created_at DESC LIMIT 4`, userID)
+	if err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
+		return
+	}
+	var oldHashes []string
+	for rows.Next() {
+		var h string
+		if err := rows.Scan(&h); err == nil {
+			oldHashes = append(oldHashes, h)
+		}
+	}
+	rows.Close()
+
+	if existingHash.Valid && existingHash.String != "" {
+		oldHashes = append(oldHashes, existingHash.String)
+	}
+	for _, h := range oldHashes {
+		if auth.CheckPassword(body.NewPassword, h) {
+			http.Error(w, "Non puoi riutilizzare una delle ultime 5 password", http.StatusConflict)
+			return
+		}
+	}
+
 	newHash, err := auth.HashPassword(body.NewPassword)
 	if err != nil {
 		http.Error(w, "Errore interno", http.StatusInternalServerError)
 		return
 	}
 
-	_, err = database.Pool.Exec(r.Context(),
-		`UPDATE users SET password_hash = $1 WHERE id = $2`, newHash, userID)
+	tx, err := database.Pool.Begin(r.Context())
+	if err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
+		return
+	}
+	defer tx.Rollback(r.Context())
+
+	if existingHash.Valid && existingHash.String != "" {
+		_, err = tx.Exec(r.Context(),
+			`INSERT INTO password_history (user_id, password_hash) VALUES ($1, $2)`, userID, existingHash.String)
+		if err != nil {
+			http.Error(w, "Errore interno", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	_, err = tx.Exec(r.Context(), `UPDATE users SET password_hash = $1 WHERE id = $2`, newHash, userID)
 	if err != nil {
 		http.Error(w, "Errore aggiornamento password", http.StatusInternalServerError)
+		return
+	}
+
+	// mantieni solo le ultime 5 nello storico
+	_, err = tx.Exec(r.Context(), `
+		DELETE FROM password_history
+		WHERE user_id = $1 AND id NOT IN (
+			SELECT id FROM password_history WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5
+		)`, userID)
+	if err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
+		return
+	}
+
+	if err := tx.Commit(r.Context()); err != nil {
+		http.Error(w, "Errore interno", http.StatusInternalServerError)
 		return
 	}
 

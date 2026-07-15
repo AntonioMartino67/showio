@@ -115,7 +115,13 @@ export class Profile {
       error: (err) => {
         this.pwSaving.set(false);
         this.pwIsError.set(true);
-        this.pwMessage.set(err?.status === 403 ? 'Password attuale errata' : 'Errore durante il salvataggio');
+        if (err?.status === 403) {
+          this.pwMessage.set('Password attuale errata');
+        } else if (err?.status === 409) {
+          this.pwMessage.set('Non puoi riutilizzare una delle ultime 5 password');
+        } else {
+          this.pwMessage.set('Errore durante il salvataggio');
+        }
       }
     });
   }
