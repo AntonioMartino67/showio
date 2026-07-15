@@ -14,8 +14,10 @@
       <div class="profile-card avatar-form">
         <label class="label">URL avatar</label>
         <input type="text" [(ngModel)]="avatarUrl" placeholder="https://esempio.com/immagine.jpg" />
-        <button (click)="saveAvatar()" [disabled]="saving">{{ saving ? 'Salvo...' : 'Salva avatar' }}</button>
-        @if (message) { <p class="msg">{{ message }}</p> }
+        <button (click)="saveAvatar()" [disabled]="saving()">{{ saving() ? 'Salvo...' : 'Salva avatar' }}</button>
+        @if (message()) {
+          <p class="msg" [class.error]="isError()">{{ message() }}</p>
+        }
       </div>
     }
   </div>

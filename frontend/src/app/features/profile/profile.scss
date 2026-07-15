@@ -78,5 +78,13 @@
     &:disabled { opacity: 0.6; cursor: default; }
   }
 
-  .msg { color: #4caf50; font-size: 0.85rem; margin: 0; }
+  .msg {
+    color: #4caf50;
+    font-size: 0.85rem;
+    margin: 0;
+
+    &.error {
+      color: #ff6b6b;
+    }
+  }
 }

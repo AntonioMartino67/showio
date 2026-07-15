@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,8 +13,9 @@ import { Navbar } from '../../shared/navbar/navbar';
 })
 export class Profile {
   avatarUrl = '';
-  saving = false;
-  message = '';
+  saving = signal(false);
+  message = signal('');
+  isError = signal(false);
 
   constructor(public auth: AuthService) {
     this.avatarUrl = this.auth.currentUser()?.avatar_url || '';
@@ -22,33 +23,39 @@ export class Profile {
 
   saveAvatar() {
     const url = this.avatarUrl.trim();
-    this.message = '';
+    this.message.set('');
+    this.isError.set(false);
 
     if (!url) {
-      this.message = 'Inserisci un URL';
+      this.message.set('Inserisci un URL');
+      this.isError.set(true);
       return;
     }
     if (!/^https?:\/\//i.test(url)) {
-      this.message = "L'URL deve iniziare con http:// o https://";
+      this.message.set("L'URL deve iniziare con http:// o https://");
+      this.isError.set(true);
       return;
     }
 
-    this.saving = true;
+    this.saving.set(true);
     this.validateImage(url).then(isValid => {
       if (!isValid) {
-        this.saving = false;
-        this.message = "Questo link non punta a un'immagine valida (assicurati di copiare il link diretto al file, non a una pagina web)";
+        this.saving.set(false);
+        this.isError.set(true);
+        this.message.set("Questo link non punta a un'immagine valida (assicurati di copiare il link diretto al file, non a una pagina web)");
         return;
       }
 
       this.auth.updateAvatar(url).subscribe({
         next: () => {
-          this.saving = false;
-          this.message = 'Avatar aggiornato ✅';
+          this.saving.set(false);
+          this.isError.set(false);
+          this.message.set('Avatar aggiornato ✅');
         },
         error: () => {
-          this.saving = false;
-          this.message = 'Errore durante il salvataggio';
+          this.saving.set(false);
+          this.isError.set(true);
+          this.message.set('Errore durante il salvataggio');
         }
       });
     });
