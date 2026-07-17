@@ -16,14 +16,46 @@ declare const google: any;
   styleUrl: './profile.scss'
 })
 export class Profile implements AfterViewInit {
-  
   avatarUrl = '';
+  avatarEditing = signal(false);
   saving = signal(false);
   message = signal('');
   isError = signal(false);
 
+  currentPassword = '';
+  newPassword = '';
+  confirmPassword = '';
+  pwPanelOpen = signal(false);
+  pwSaving = signal(false);
+  pwMessage = signal('');
+  pwIsError = signal(false);
+
+  googleMessage = signal('');
+  googleIsError = signal(false);
+
   constructor(public auth: AuthService) {
     this.avatarUrl = this.auth.currentUser()?.avatar_url || '';
+  }
+
+  ngAfterViewInit() {
+    if (this.auth.currentUser()?.google_linked) return;
+    if (typeof google === 'undefined') return;
+    google.accounts.id.initialize({
+      client_id: environment.googleClientId,
+      callback: (response: any) => this.handleGoogleLink(response)
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('google-link-btn'),
+      { theme: 'outline', size: 'large', width: 280 }
+    );
+  }
+
+  toggleAvatarEdit() {
+    this.avatarEditing.update(v => !v);
+    this.message.set('');
+    if (this.avatarEditing()) {
+      this.avatarUrl = this.auth.currentUser()?.avatar_url || '';
+    }
   }
 
   saveAvatar() {
@@ -47,7 +79,7 @@ export class Profile implements AfterViewInit {
       if (!isValid) {
         this.saving.set(false);
         this.isError.set(true);
-        this.message.set("Questo link non punta a un'immagine valida (assicurati di copiare il link diretto al file, non a una pagina web)");
+        this.message.set("Questo link non punta a un'immagine valida (copia il link diretto al file, non a una pagina web)");
         return;
       }
 
@@ -56,6 +88,7 @@ export class Profile implements AfterViewInit {
           this.saving.set(false);
           this.isError.set(false);
           this.message.set('Avatar aggiornato ✅');
+          setTimeout(() => this.avatarEditing.set(false), 900);
         },
         error: () => {
           this.saving.set(false);
@@ -76,12 +109,15 @@ export class Profile implements AfterViewInit {
     });
   }
 
-  currentPassword = '';
-  newPassword = '';
-  confirmPassword = '';
-  pwSaving = signal(false);
-  pwMessage = signal('');
-  pwIsError = signal(false);
+  togglePasswordPanel() {
+    this.pwPanelOpen.update(v => !v);
+    this.pwMessage.set('');
+    if (!this.pwPanelOpen()) {
+      this.currentPassword = '';
+      this.newPassword = '';
+      this.confirmPassword = '';
+    }
+  }
 
   changePassword() {
     this.pwMessage.set('');
@@ -115,6 +151,7 @@ export class Profile implements AfterViewInit {
         this.newPassword = '';
         this.confirmPassword = '';
         this.auth.currentUser.update(u => u ? { ...u, has_password: true } : u);
+        setTimeout(() => this.pwPanelOpen.set(false), 1200);
       },
       error: (err) => {
         this.pwSaving.set(false);
@@ -128,22 +165,6 @@ export class Profile implements AfterViewInit {
         }
       }
     });
-  }
-
-  googleMessage = signal('');
-  googleIsError = signal(false);
-
-  ngAfterViewInit() {
-    if (this.auth.currentUser()?.google_linked) return;
-    if (typeof google === 'undefined') return;
-    google.accounts.id.initialize({
-      client_id: environment.googleClientId,
-      callback: (response: any) => this.handleGoogleLink(response)
-    });
-    google.accounts.id.renderButton(
-      document.getElementById('google-link-btn'),
-      { theme: 'outline', size: 'large', width: 280 }
-    );
   }
 
   handleGoogleLink(response: any) {

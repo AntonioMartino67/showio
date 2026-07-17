@@ -17,6 +17,7 @@ import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR } from '@angular/f
 export class PasswordInput implements ControlValueAccessor {
   @Input() placeholder = '';
   @Input() name = '';
+  @Input() showToggle = true;
 
   value = '';
   visible = signal(false);

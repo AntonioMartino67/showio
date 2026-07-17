@@ -1,57 +1,102 @@
 <div class="page">
   <app-navbar />
+
   <div class="content">
-    <h2>Profilo</h2>
     @if (auth.currentUser(); as user) {
-      <div class="profile-card">
-        @if (user.avatar_url) {
-          <img class="avatar-preview" [src]="user.avatar_url" alt="avatar" />
-        }
-        <div class="row"><span class="label">Username</span><span>{{ user.username }}</span></div>
-        <div class="row"><span class="label">Email</span><span>{{ user.email }}</span></div>
-      </div>
 
-      <div class="profile-card avatar-form">
-        <label class="label">URL avatar</label>
-        <input type="text" [(ngModel)]="avatarUrl" placeholder="https://esempio.com/immagine.jpg" />
-        <button (click)="saveAvatar()" [disabled]="saving()">{{ saving() ? 'Salvo...' : 'Salva avatar' }}</button>
-        @if (message()) {
-          <p class="msg" [class.error]="isError()">{{ message() }}</p>
-        }
-      </div>
-
-      <div class="profile-card avatar-form">
-        <label class="label">{{ user.has_password ? 'Cambia password' : 'Imposta una password' }}</label>
-
-        @if (user.has_password) {
-          <app-password-input [(ngModel)]="currentPassword" name="currentPassword" placeholder="Password attuale" />
-        }
-        <app-password-input [(ngModel)]="newPassword" name="newPassword" placeholder="Nuova password" />
-        <app-password-input [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Conferma nuova password" />
-
-        <button (click)="changePassword()" [disabled]="pwSaving()">
-          {{ pwSaving() ? 'Salvo...' : (user.has_password ? 'Aggiorna password' : 'Imposta password') }}
+      <section class="identity">
+        <button class="avatar-ring" (click)="toggleAvatarEdit()" [attr.aria-label]="'Cambia avatar'">
+          @if (user.avatar_url) {
+            <img [src]="user.avatar_url" alt="avatar" />
+          } @else {
+            <span class="avatar-fallback">{{ user.username.charAt(0).toUpperCase() }}</span>
+          }
+          <span class="avatar-overlay">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+            <span>Cambia</span>
+          </span>
         </button>
 
-        @if (pwMessage()) {
-          <p class="msg" [class.error]="pwIsError()">{{ pwMessage() }}</p>
-        }
-      </div>
+        <h1>{{ user.username }}</h1>
+        <p class="email">{{ user.email }}</p>
 
-      <div class="profile-card avatar-form">
-        <label class="label">Account Google</label>
-
-        @if (user.google_linked) {
-          <p class="google-status">✅ Collegato</p>
-          <button (click)="unlinkGoogle()">Scollega account Google</button>
-        } @else {
-          <div id="google-link-btn"></div>
+        @if (avatarEditing()) {
+          <div class="avatar-edit">
+            <input type="text" [(ngModel)]="avatarUrl" placeholder="https://esempio.com/immagine.jpg" />
+            <div class="avatar-edit-actions">
+              <button class="btn-primary" (click)="saveAvatar()" [disabled]="saving()">
+                {{ saving() ? 'Verifico...' : 'Salva' }}
+              </button>
+              <button class="btn-ghost" (click)="toggleAvatarEdit()">Annulla</button>
+            </div>
+            @if (message()) {
+              <p class="msg" [class.error]="isError()">{{ message() }}</p>
+            }
+          </div>
         }
+      </section>
 
-        @if (googleMessage()) {
-          <p class="msg" [class.error]="googleIsError()">{{ googleMessage() }}</p>
-        }
-      </div>
+      <section class="settings">
+        <h2>Sicurezza</h2>
+
+        <div class="setting-row">
+          <div class="setting-row-head">
+            <div>
+              <span class="setting-title">Password</span>
+              <span class="setting-sub">{{ user.has_password ? 'Impostata' : 'Non impostata — accedi solo con Google' }}</span>
+            </div>
+            <button class="btn-danger" (click)="togglePasswordPanel()">
+              {{ user.has_password ? 'Cambia password' : 'Imposta password' }}
+            </button>
+          </div>
+
+          @if (pwPanelOpen()) {
+            <div class="setting-panel">
+              <h3>{{ user.has_password ? 'Aggiorna la tua password' : 'Imposta una password' }}</h3>
+
+              @if (user.has_password) {
+                <app-password-input [(ngModel)]="currentPassword" name="currentPassword" placeholder="Password attuale" />
+              }
+              <app-password-input [(ngModel)]="newPassword" name="newPassword" placeholder="Nuova password" />
+              <app-password-input [(ngModel)]="confirmPassword" name="confirmPassword" placeholder="Conferma nuova password" [showToggle]="false" />
+
+              <div class="avatar-edit-actions">
+                <button class="btn-primary" (click)="changePassword()" [disabled]="pwSaving()">
+                  {{ pwSaving() ? 'Salvo...' : 'Conferma' }}
+                </button>
+                <button class="btn-ghost" (click)="togglePasswordPanel()">Annulla</button>
+              </div>
+
+              @if (pwMessage()) {
+                <p class="msg" [class.error]="pwIsError()">{{ pwMessage() }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-head">
+            <div>
+              <span class="setting-title">Account Google</span>
+              <span class="setting-sub">{{ user.google_linked ? 'Collegato' : 'Non collegato' }}</span>
+            </div>
+            @if (user.google_linked) {
+              <button class="btn-ghost-danger" (click)="unlinkGoogle()">Scollega</button>
+            }
+          </div>
+
+          @if (!user.google_linked) {
+            <div class="setting-panel">
+              <div id="google-link-btn"></div>
+            </div>
+          }
+
+          @if (googleMessage()) {
+            <p class="msg" [class.error]="googleIsError()">{{ googleMessage() }}</p>
+          }
+        </div>
+      </section>
+
     }
   </div>
 </div>
