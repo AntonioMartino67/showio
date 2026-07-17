@@ -37,6 +37,21 @@
           <p class="msg" [class.error]="pwIsError()">{{ pwMessage() }}</p>
         }
       </div>
+
+      <div class="profile-card avatar-form">
+        <label class="label">Account Google</label>
+
+        @if (user.google_linked) {
+          <p class="google-status">✅ Collegato</p>
+          <button (click)="unlinkGoogle()">Scollega account Google</button>
+        } @else {
+          <div id="google-link-btn"></div>
+        }
+
+        @if (googleMessage()) {
+          <p class="msg" [class.error]="googleIsError()">{{ googleMessage() }}</p>
+        }
+      </div>
     }
   </div>
 </div>

@@ -66,6 +66,18 @@ export class AuthService {
     });
   }
 
+  linkGoogle(credential: string) {
+    return this.http.post(`${environment.apiUrl}/me/google`, { credential }).pipe(
+      tap(() => this.currentUser.update(u => u ? { ...u, google_linked: true } : u))
+    );
+  }
+
+  unlinkGoogle() {
+    return this.http.delete(`${environment.apiUrl}/me/google`).pipe(
+      tap(() => this.currentUser.update(u => u ? { ...u, google_linked: false } : u))
+    );
+  }
+
   logout() {
     localStorage.removeItem(this.tokenKey);
     this.currentUser.set(null);

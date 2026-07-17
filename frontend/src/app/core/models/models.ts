@@ -4,6 +4,7 @@ export interface User {
   email: string;
   avatar_url?: string;
   has_password?: boolean;
+  google_linked?: boolean;
 }
 
 export interface AuthResponse {

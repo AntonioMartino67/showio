@@ -234,9 +234,9 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(auth.UserIDKey).(string)
 
 	var username, email string
-	var avatarURL, passwordHash sql.NullString
-	query := `SELECT username, email, avatar_url, password_hash FROM users WHERE id = $1`
-	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL, &passwordHash)
+	var avatarURL, passwordHash, googleID sql.NullString
+	query := `SELECT username, email, avatar_url, password_hash, google_id FROM users WHERE id = $1`
+	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL, &passwordHash, &googleID)
 	if err != nil {
 		http.Error(w, "Utente non trovato", http.StatusNotFound)
 		return
@@ -244,11 +244,12 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":           userID,
-		"username":     username,
-		"email":        email,
-		"avatar_url":   avatarURL.String,
-		"has_password": passwordHash.Valid && passwordHash.String != "",
+		"id":            userID,
+		"username":      username,
+		"email":         email,
+		"avatar_url":    avatarURL.String,
+		"has_password":  passwordHash.Valid && passwordHash.String != "",
+		"google_linked": googleID.Valid && googleID.String != "",
 	})
 }
 

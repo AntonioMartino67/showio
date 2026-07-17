@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -118,4 +119,69 @@ func generateUsernameFromEmail(r *http.Request, email string) string {
 		username = fmt.Sprintf("%s%d", base, i)
 	}
 	return fmt.Sprintf("%s%d", base, os.Getpid())
+}
+
+func LinkGoogleHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	var req GoogleLoginRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Credential == "" {
+		http.Error(w, "Credential mancante", http.StatusBadRequest)
+		return
+	}
+
+	info, err := verifyGoogleToken(req.Credential)
+	if err != nil {
+		http.Error(w, "Token Google non valido", http.StatusUnauthorized)
+		return
+	}
+	clientID := os.Getenv("GOOGLE_CLIENT_ID")
+	if clientID == "" || info.Aud != clientID {
+		http.Error(w, "Token Google non valido", http.StatusUnauthorized)
+		return
+	}
+
+	var existingUserID string
+	err = database.Pool.QueryRow(r.Context(),
+		`SELECT id FROM users WHERE google_id = $1`, info.Sub,
+	).Scan(&existingUserID)
+	if err == nil && existingUserID != userID {
+		http.Error(w, "Questo account Google è già collegato a un altro utente", http.StatusConflict)
+		return
+	}
+
+	_, err = database.Pool.Exec(r.Context(),
+		`UPDATE users SET google_id = $1 WHERE id = $2`, info.Sub, userID)
+	if err != nil {
+		http.Error(w, "Errore durante il collegamento", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func UnlinkGoogleHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	var passwordHash sql.NullString
+	err := database.Pool.QueryRow(r.Context(),
+		`SELECT password_hash FROM users WHERE id = $1`, userID,
+	).Scan(&passwordHash)
+	if err != nil {
+		http.Error(w, "Utente non trovato", http.StatusNotFound)
+		return
+	}
+	if !passwordHash.Valid || passwordHash.String == "" {
+		http.Error(w, "Imposta prima una password, altrimenti perderesti l'accesso all'account", http.StatusConflict)
+		return
+	}
+
+	_, err = database.Pool.Exec(r.Context(),
+		`UPDATE users SET google_id = NULL WHERE id = $1`, userID)
+	if err != nil {
+		http.Error(w, "Errore durante lo scollegamento", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

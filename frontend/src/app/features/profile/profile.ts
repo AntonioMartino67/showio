@@ -1,9 +1,12 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { Navbar } from '../../shared/navbar/navbar';
 import { PasswordInput } from '../../shared/password-input/password-input';
+import { environment } from '../../../environments/environment';
+
+declare const google: any;
 
 @Component({
   selector: 'app-profile',
@@ -12,7 +15,8 @@ import { PasswordInput } from '../../shared/password-input/password-input';
   templateUrl: './profile.html',
   styleUrl: './profile.scss'
 })
-export class Profile {
+export class Profile implements AfterViewInit {
+  
   avatarUrl = '';
   saving = signal(false);
   message = signal('');
@@ -122,6 +126,50 @@ export class Profile {
         } else {
           this.pwMessage.set('Errore durante il salvataggio');
         }
+      }
+    });
+  }
+
+  googleMessage = signal('');
+  googleIsError = signal(false);
+
+  ngAfterViewInit() {
+    if (this.auth.currentUser()?.google_linked) return;
+    if (typeof google === 'undefined') return;
+    google.accounts.id.initialize({
+      client_id: environment.googleClientId,
+      callback: (response: any) => this.handleGoogleLink(response)
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('google-link-btn'),
+      { theme: 'outline', size: 'large', width: 280 }
+    );
+  }
+
+  handleGoogleLink(response: any) {
+    this.googleMessage.set('');
+    this.auth.linkGoogle(response.credential).subscribe({
+      next: () => {
+        this.googleIsError.set(false);
+        this.googleMessage.set('Account Google collegato ✅');
+      },
+      error: (err) => {
+        this.googleIsError.set(true);
+        this.googleMessage.set(err?.status === 409 ? 'Questo account Google è già collegato a un altro utente' : 'Collegamento fallito');
+      }
+    });
+  }
+
+  unlinkGoogle() {
+    this.googleMessage.set('');
+    this.auth.unlinkGoogle().subscribe({
+      next: () => {
+        this.googleIsError.set(false);
+        this.googleMessage.set('Account Google scollegato');
+      },
+      error: (err) => {
+        this.googleIsError.set(true);
+        this.googleMessage.set(err?.status === 409 ? 'Imposta prima una password, altrimenti perderesti l\'accesso' : 'Scollegamento fallito');
       }
     });
   }
