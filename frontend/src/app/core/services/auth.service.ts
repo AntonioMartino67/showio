@@ -91,4 +91,10 @@ export class AuthService {
   isLoggedIn(): boolean {
     return !!this.getToken();
   }
+
+  updateNotifications(notifyNewSeasons: boolean) {
+  return this.http.put(`${environment.apiUrl}/me/notifications`, { notify_new_seasons: notifyNewSeasons }).pipe(
+    tap(() => this.currentUser.update(u => u ? { ...u, notify_new_seasons: notifyNewSeasons } : u))
+  );
+}
 }

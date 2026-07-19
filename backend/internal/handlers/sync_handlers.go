@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/AntonioMartino67/showio/backend/internal/database"
+	"github.com/AntonioMartino67/showio/backend/internal/email"
 	"github.com/AntonioMartino67/showio/backend/internal/external"
 )
 
@@ -64,9 +65,64 @@ func SyncTVSeasons(mediaItemID string, tmdbExternalID string) error {
 	return nil
 }
 
+// getLastKnownEpisode ritorna l'ultima stagione/episodio noto per un MediaItem
+func getLastKnownEpisode(mediaItemID string) (int, int) {
+	var season, episode int
+	database.Pool.QueryRow(context.Background(), `
+		SELECT s.season_number, e.episode_number
+		FROM episodes e
+		JOIN seasons s ON s.id = e.season_id
+		WHERE s.media_item_id = $1
+		ORDER BY s.season_number DESC, e.episode_number DESC
+		LIMIT 1
+	`, mediaItemID).Scan(&season, &episode)
+	return season, episode
+}
+
+// fixCompletedStatus riporta a "watching" chi era rimasto a "completed"
+// ma ora è indietro rispetto al nuovo ultimo episodio noto
+func fixCompletedStatus(mediaItemID string, newSeason, newEpisode int) {
+	database.Pool.Exec(context.Background(), `
+		UPDATE user_progress
+		SET status = 'watching'
+		WHERE media_item_id = $1 AND status = 'completed'
+		AND (current_season < $2 OR (current_season = $2 AND current_episode < $3))
+	`, mediaItemID, newSeason, newEpisode)
+}
+
+// notifyNewContent avvisa via email chi sta guardando (watching) questo MediaItem
+func notifyNewContent(mediaItemID string, seasonNumber int) {
+	var title string
+	database.Pool.QueryRow(context.Background(),
+		`SELECT title FROM media_items WHERE id = $1`, mediaItemID,
+	).Scan(&title)
+
+	rows, err := database.Pool.Query(context.Background(),
+		`SELECT u.email, u.username FROM users u
+		 JOIN user_progress up ON up.user_id = u.id
+		 WHERE up.media_item_id = $1 AND up.status = 'watching'
+		 AND u.notify_new_seasons = true AND u.deleted_at IS NULL`,
+		mediaItemID,
+	)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var to, username string
+		if err := rows.Scan(&to, &username); err != nil {
+			continue
+		}
+		go email.SendNewSeasonEmail(to, username, title, seasonNumber)
+	}
+}
+
 // SyncAllHandler risincronizza stagioni/episodi di tutte le serie TV
-// attualmente tracciate da almeno un utente. Protetto da una chiave segreta
-// passata nell'header X-Cron-Secret, pensato per essere chiamato da un job schedulato.
+// tracciate da almeno un utente in "watching" o "completed" (chi ha finito
+// gli episodi usciti finora va comunque ricontrollato per i nuovi).
+// Protetto da una chiave segreta passata nell'header X-Cron-Secret,
+// pensato per essere chiamato da un job schedulato.
 func SyncAllHandler(w http.ResponseWriter, r *http.Request) {
 	secret := os.Getenv("CRON_SECRET")
 	if secret == "" || r.Header.Get("X-Cron-Secret") != secret {
@@ -78,7 +134,7 @@ func SyncAllHandler(w http.ResponseWriter, r *http.Request) {
 		`SELECT DISTINCT mi.id, mi.external_id
 		 FROM media_items mi
 		 JOIN user_progress up ON up.media_item_id = mi.id
-		 WHERE mi.type = 'tv' AND mi.source = 'tmdb' AND up.status = 'watching'`,
+		 WHERE mi.type = 'tv' AND mi.source = 'tmdb' AND up.status IN ('watching', 'completed')`,
 	)
 	if err != nil {
 		http.Error(w, "Errore durante il recupero delle serie", http.StatusInternalServerError)
@@ -102,8 +158,17 @@ func SyncAllHandler(w http.ResponseWriter, r *http.Request) {
 
 	synced := 0
 	for _, item := range items {
-		if err := SyncTVSeasons(item.MediaItemID, item.ExternalID); err == nil {
-			synced++
+		oldSeason, oldEpisode := getLastKnownEpisode(item.MediaItemID)
+
+		if err := SyncTVSeasons(item.MediaItemID, item.ExternalID); err != nil {
+			continue
+		}
+		synced++
+
+		newSeason, newEpisode := getLastKnownEpisode(item.MediaItemID)
+		if newSeason > oldSeason || (newSeason == oldSeason && newEpisode > oldEpisode) {
+			fixCompletedStatus(item.MediaItemID, newSeason, newEpisode)
+			notifyNewContent(item.MediaItemID, newSeason)
 		}
 	}
 

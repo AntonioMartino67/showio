@@ -1,9 +1,9 @@
-name: Sync notturno episodi
+name: Sync Cron
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # ogni notte alle 03:00 UTC
-  workflow_dispatch:      # permette di lanciarlo anche manualmente da GitHub
+    - cron: '0 6 * * *'
+  workflow_dispatch:
 
 jobs:
   sync:

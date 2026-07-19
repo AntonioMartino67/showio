@@ -5,6 +5,7 @@ export interface User {
   avatar_url?: string;
   has_password?: boolean;
   google_linked?: boolean;
+  notify_new_seasons?: boolean;
 }
 
 export interface AuthResponse {

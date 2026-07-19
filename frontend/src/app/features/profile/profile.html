@@ -95,6 +95,17 @@
             <p class="msg" [class.error]="googleIsError()">{{ googleMessage() }}</p>
           }
         </div>
+        <div class="setting-row">
+        <div class="setting-row-head">
+          <div>
+            <span class="setting-title">Notifiche email</span>
+            <span class="setting-sub">Ricevi un'email quando esce una nuova stagione di una serie che segui</span>
+          </div>
+          <button class="btn-ghost" (click)="toggleNotifications()">
+            {{ user.notify_new_seasons ? 'Disattiva' : 'Attiva' }}
+          </button>
+        </div>
+      </div>
       </section>
 
     }

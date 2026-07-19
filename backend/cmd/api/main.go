@@ -59,6 +59,7 @@ func main() {
 		protected.Put("/me/password", handlers.ChangePasswordHandler)
 		protected.Post("/me/google", handlers.LinkGoogleHandler)
 		protected.Delete("/me/google", handlers.UnlinkGoogleHandler)
+		protected.Put("/me/notifications", handlers.UpdateNotificationsHandler)
 		protected.Post("/progress", handlers.AddProgressHandler)
 		protected.Get("/progress", handlers.ListProgressHandler)
 		protected.Put("/progress/{mediaItemId}/episode", handlers.UpdateEpisodeHandler)

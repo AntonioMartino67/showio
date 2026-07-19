@@ -194,4 +194,9 @@ export class Profile implements AfterViewInit {
       }
     });
   }
+
+  toggleNotifications() {
+    const current = this.auth.currentUser()?.notify_new_seasons ?? true;
+    this.auth.updateNotifications(!current).subscribe();
+  }
 }

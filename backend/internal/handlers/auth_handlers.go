@@ -235,8 +235,9 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 
 	var username, email string
 	var avatarURL, passwordHash, googleID sql.NullString
-	query := `SELECT username, email, avatar_url, password_hash, google_id FROM users WHERE id = $1`
-	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL, &passwordHash, &googleID)
+	var notifyNewSeasons bool
+	query := `SELECT username, email, avatar_url, password_hash, google_id, notify_new_seasons FROM users WHERE id = $1`
+	err := database.Pool.QueryRow(r.Context(), query, userID).Scan(&username, &email, &avatarURL, &passwordHash, &googleID, &notifyNewSeasons)
 	if err != nil {
 		http.Error(w, "Utente non trovato", http.StatusNotFound)
 		return
@@ -244,12 +245,13 @@ func MeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
-		"id":            userID,
-		"username":      username,
-		"email":         email,
-		"avatar_url":    avatarURL.String,
-		"has_password":  passwordHash.Valid && passwordHash.String != "",
-		"google_linked": googleID.Valid && googleID.String != "",
+		"id":                  userID,
+		"username":            username,
+		"email":               email,
+		"avatar_url":          avatarURL.String,
+		"has_password":        passwordHash.Valid && passwordHash.String != "",
+		"google_linked":       googleID.Valid && googleID.String != "",
+		"notify_new_seasons":  notifyNewSeasons,
 	})
 }
 
@@ -373,6 +375,27 @@ func UpdateAvatarHandler(w http.ResponseWriter, r *http.Request) {
 		`UPDATE users SET avatar_url = $1 WHERE id = $2`, body.AvatarURL, userID)
 	if err != nil {
 		http.Error(w, "Errore aggiornamento avatar", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func UpdateNotificationsHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(auth.UserIDKey).(string)
+
+	var body struct {
+		NotifyNewSeasons bool `json:"notify_new_seasons"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		http.Error(w, "Dati non validi", http.StatusBadRequest)
+		return
+	}
+
+	_, err := database.Pool.Exec(r.Context(),
+		`UPDATE users SET notify_new_seasons = $1 WHERE id = $2`, body.NotifyNewSeasons, userID)
+	if err != nil {
+		http.Error(w, "Errore durante l'aggiornamento", http.StatusInternalServerError)
 		return
 	}
 
